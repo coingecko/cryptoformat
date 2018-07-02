@@ -8,7 +8,7 @@ const currencySymbols = {
   EUR: "€",
   CHF: "Fr.",
   SEK: "kr",
-  JPY: "¥", 
+  JPY: "¥",
   CNY: "¥",
   INR: "₹",
   RUB: "₽",
@@ -115,7 +115,7 @@ function initializeFormatters(isoCode) {
   });
 }
 
-export const formatCurrency = (amount, isoCode, raw = false, locale = "en") => {
+export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
   isoCode = isoCode.toUpperCase();
 
   if (currentISOCode !== isoCode) {
