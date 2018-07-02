@@ -72,6 +72,7 @@ const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   return formattedCurrency;
 };
 
+// State variables
 let currentISOCode;
 let currencyFormatterNormal;
 let currencyFormatterNoDecimal;
@@ -79,7 +80,7 @@ let currencyFormatterMedium;
 let currencyFormatterSmall;
 let currencyFormatterVerySmall;
 
-function initializeFormatters(isoCode) {
+function initializeFormatters(isoCode, locale) {
   currencyFormatterNormal = new Intl.NumberFormat(locale, {
     style: "currency",
     currency: isoCode,
@@ -122,7 +123,7 @@ export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
     currentISOCode = isoCode;
 
     // Formatters are tied to currency code, we try to initialize as infrequently as possible.
-    initializeFormatters();
+    initializeFormatters(isoCode, locale);
   }
 
   if (isoCode === "BTC" || isoCode === "ETH") {
