@@ -22,7 +22,7 @@ const currencySymbols = {
   MYR: "RM",
   IDR: "Rp",
   NZD: "NZ$",
-  MXN: "MP$",
+  MXN: "MX$",
   PHP: "₱",
   DKK: "kr.",
   PLN: "zł",
@@ -37,6 +37,7 @@ const currencySymbols = {
 const symbolOverrides = {
   MYR: { location: { start: true }, forLocales: { en: true } },
   SGD: { location: { start: true }, forLocales: { en: true } },
+  PHP: { location: { start: true }, forLocales: { en: true } },
   BTC: { location: { start: true }, forLocales: { en: true } },
   ETH: { location: { start: true }, forLocales: { en: true } }
 };
