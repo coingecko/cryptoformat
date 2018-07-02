@@ -61,8 +61,10 @@ const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   // If currency code is at the back
   const currencyCodeBackMatch = formattedCurrency.match(/[A-Z]{3}$/);
   if (currencyCodeBackMatch != null) {
-    // Replace currency code with symbol if whitelisted.
     const code = currencyCodeBackMatch[0];
+
+    // Replace currency code with symbol if whitelisted.
+    const overrideObj = symbolOverrides[code];
     if (overrideObj && overrideObj.location.end && overrideObj.forLocales[locale]) {
       return formattedCurrency.replace(code, currencySymbols[code]);
     } else {
@@ -117,6 +119,11 @@ function initializeFormatters(isoCode, locale) {
   });
 }
 
+// Moderate crypto amount threshold
+const MEDIUM_CRYPTO_THRESHOLD = 50;
+// Large crypto amount threshold
+const LARGE_CRYPTO_THRESHOLD = 1000;
+
 export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
   isoCode = isoCode.toUpperCase();
 
@@ -137,15 +144,17 @@ export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
       return price.toPrecision(8);
     }
 
-    const largeNumCryptoThreshold = 100;
     if (amount === 0.0) {
       return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
-    } else if (price >= largeNumCryptoThreshold) {
+    } else if (price >= LARGE_CRYPTO_THRESHOLD) {
       // Large crypto amount, show no decimal value
       return formatCurrencyOverride(currencyFormatterNoDecimal.format(amount), locale);
-    } else if (price >= 1.0 && price < largeNumCryptoThreshold) {
+    } else if (price >= MEDIUM_CRYPTO_THRESHOLD && price < LARGE_CRYPTO_THRESHOLD) {
       // Medium crypto amount, show 3 fraction digits
       return formatCurrencyOverride(currencyFormatterMedium.format(amount), locale);
+    } else if (price >= 1.0 && price < MEDIUM_CRYPTO_THRESHOLD) {
+      //  crypto amount, show 6 fraction digits
+      return formatCurrencyOverride(currencyFormatterSmall.format(amount), locale);
     } else {
       // Crypto amount < 1, show 8 fraction digits
       return formatCurrencyOverride(currencyFormatterVerySmall.format(amount), locale);
