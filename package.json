@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "publish": "npm publish --access public"
+    "submit": "npm publish --access public"
   },
   "repository": {
     "type": "git",
