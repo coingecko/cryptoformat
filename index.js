@@ -41,6 +41,7 @@ const symbolOverrides = {
   ETH: { location: { start: true }, forLocales: { en: true } }
 };
 
+// Function to transform the output from Intl.NumberFormat#format
 const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   // If currency code remains in front
   const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}/);
@@ -71,44 +72,57 @@ const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   return formattedCurrency;
 };
 
+let currentISOCode;
+let currencyFormatterNormal;
+let currencyFormatterNoDecimal;
+let currencyFormatterMedium;
+let currencyFormatterSmall;
+let currencyFormatterVerySmall;
+
+function initializeFormatters(isoCode) {
+  currencyFormatterNormal = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: isoCode,
+    currencyDisplay: "symbol"
+  });
+  currencyFormatterNoDecimal = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: isoCode,
+    currencyDisplay: "symbol",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+  currencyFormatterMedium = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: isoCode,
+    currencyDisplay: "symbol",
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3
+  });
+  currencyFormatterSmall = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: isoCode,
+    currencyDisplay: "symbol",
+    minimumFractionDigits: 6,
+    maximumFractionDigits: 6
+  });
+  currencyFormatterVerySmall = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: isoCode,
+    currencyDisplay: "symbol",
+    minimumFractionDigits: 8,
+    maximumFractionDigits: 8
+  });
+}
+
 export const formatCurrency = (amount, isoCode, raw = false, locale = "en") => {
   isoCode = isoCode.toUpperCase();
 
-  if (window.currentISOCode !== isoCode) {
-    window.currentISOCode = isoCode;
-    window.currencyFormatterNormal = new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: isoCode,
-      currencyDisplay: "symbol"
-    });
-    window.currencyFormatterNoDecimal = new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: isoCode,
-      currencyDisplay: "symbol",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
-    window.currencyFormatterMedium = new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: isoCode,
-      currencyDisplay: "symbol",
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3
-    });
-    window.currencyFormatterSmall = new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: isoCode,
-      currencyDisplay: "symbol",
-      minimumFractionDigits: 6,
-      maximumFractionDigits: 6
-    });
-    window.currencyFormatterVerySmall = new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: isoCode,
-      currencyDisplay: "symbol",
-      minimumFractionDigits: 8,
-      maximumFractionDigits: 8
-    });
+  if (currentISOCode !== isoCode) {
+    currentISOCode = isoCode;
+
+    // Formatters are tied to currency code, we try to initialize as infrequently as possible.
+    initializeFormatters();
   }
 
   if (isoCode === "BTC" || isoCode === "ETH") {
@@ -123,16 +137,16 @@ export const formatCurrency = (amount, isoCode, raw = false, locale = "en") => {
 
     const largeNumCryptoThreshold = 100;
     if (amount === 0.0) {
-      return formatCurrencyOverride(window.currencyFormatterNormal.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
     } else if (price >= largeNumCryptoThreshold) {
       // Large crypto amount, show no decimal value
-      return formatCurrencyOverride(window.currencyFormatterNoDecimal.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterNoDecimal.format(amount), locale);
     } else if (price >= 1.0 && price < largeNumCryptoThreshold) {
       // Medium crypto amount, show 3 fraction digits
-      return formatCurrencyOverride(window.currencyFormatterMedium.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterMedium.format(amount), locale);
     } else {
       // Crypto amount < 1, show 8 fraction digits
-      return formatCurrencyOverride(window.currencyFormatterVerySmall.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterVerySmall.format(amount), locale);
     }
   } else {
     if (raw) {
@@ -146,14 +160,14 @@ export const formatCurrency = (amount, isoCode, raw = false, locale = "en") => {
     }
 
     if (amount < 0.001) {
-      return formatCurrencyOverride(window.currencyFormatterVerySmall.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterVerySmall.format(amount), locale);
     } else if (amount < 1.0) {
-      return formatCurrencyOverride(window.currencyFormatterSmall.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterSmall.format(amount), locale);
     } else if (amount > 20000) {
-      return formatCurrencyOverride(window.currencyFormatterNoDecimal.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterNoDecimal.format(amount), locale);
     } else {
       // Let the formatter do what it seems best. In particular, we should not set any fraction amount for Japanese Yen
-      return formatCurrencyOverride(window.currencyFormatterNormal.format(amount), locale);
+      return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
     }
   }
 };
