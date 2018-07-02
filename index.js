@@ -8,7 +8,7 @@ const currencySymbols = {
   EUR: "€",
   CHF: "Fr.",
   SEK: "kr",
-  JPY: "¥",
+  JPY: "¥", 
   CNY: "¥",
   INR: "₹",
   RUB: "₽",

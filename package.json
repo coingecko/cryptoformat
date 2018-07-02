@@ -1,5 +1,5 @@
 {
-  "name": "cryptoformat.js",
+  "name": "@coingecko/cryptoformat",
   "version": "0.1.0",
   "description": "Javascript library to format and display cryptocurrencies and fiat",
   "main": "index.js",
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coingecko/cryptoformat.js.git"
+    "url": "git+https://github.com/coingecko/cryptoformat.git"
   },
   "author": "CoinGecko",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/coingecko/cryptoformat.js/issues"
+    "url": "https://github.com/coingecko/cryptoformat/issues"
   },
-  "homepage": "https://github.com/coingecko/cryptoformat.js#readme"
+  "homepage": "https://github.com/coingecko/cryptoformat#readme"
 }
