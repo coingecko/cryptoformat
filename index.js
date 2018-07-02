@@ -170,7 +170,9 @@ export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
       }
     }
 
-    if (amount < 0.001) {
+    if (amount === 0.0) {
+      return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
+    } else if (amount < 0.05) {
       return formatCurrencyOverride(currencyFormatterVerySmall.format(amount), locale);
     } else if (amount < 1.0) {
       return formatCurrencyOverride(currencyFormatterSmall.format(amount), locale);

@@ -26,3 +26,37 @@ describe("is BTC or ETH", () => {
     });
   });
 });
+
+describe("is fiat", () => {
+  describe("raw = true", () => {
+    test("returns formatted raw", () => {
+      // Very small fiat, 8 decimals
+      expect(formatCurrency(0.00001, "USD", "en", true)).toBe("0.00001000");
+
+      // Small fiat, 6 decimals
+      expect(formatCurrency(0.5, "USD", "en", true)).toBe("0.500000");
+
+      // Normal fiat, 2 decimals
+      expect(formatCurrency(10, "USD", "en", true)).toBe("10.00");
+    });
+  });
+
+  describe("raw = false", () => {
+    test("returns formatted with symbol", () => {
+      // 0 fiat, no decimals
+      expect(formatCurrency(0.0, "USD", "en")).toBe("$0.00");
+
+      // Very small fiat, 8 decimals
+      expect(formatCurrency(0.00002, "USD", "en")).toBe("$0.00002000");
+
+      // Small fiat, 6 decimals
+      expect(formatCurrency(0.5, "USD", "en")).toBe("$0.500000");
+
+      // Medium fiat, normal decimals
+      expect(formatCurrency(1001, "USD", "en")).toBe("$1,001.00");
+
+      // Large fiat, no decimals
+      expect(formatCurrency(51100, "USD", "en")).toBe("$51,100");
+    });
+  });
+});
