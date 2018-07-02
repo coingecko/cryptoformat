@@ -34,8 +34,6 @@ formatCurrency(123400, "EUR", "de")
 // "123.400 €"
 ```
 
-See
-
 ## Issues
 
 `Intl.NumberFormat` does not always behave consistently across browsers. `cryptoformat` does some manual overrides in order to ensure that "MYR123.00" is displayed as "RM123.00", for example. Unfortunately given that country detection for locale is quite hard to do, e.g. "en-MY", `cryptoformat` can only rely on "en" but this means that currency symbol formatting can differ from what an average user may expect.
