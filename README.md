@@ -18,23 +18,23 @@ npm i @coingecko/cryptoformat
 
 ## Usage
 
-```
+```js
 import { formatCurrency } from "@coingecko/cryptoformat";
 
-formatCurrency(123, "USD", "en")
+formatCurrency(123, "USD", "en");
 // "$123.00"
 
-formatCurrency(0.00123, "USD", "en")
+formatCurrency(0.00123, "USD", "en");
 // "$0.00123000"
 
 // Provide raw = true to remove formatting and symbol
-formatCurrency(0.00123, "USD", "en", true)
+formatCurrency(0.00123, "USD", "en", true);
 // "0.00123000"
 
-formatCurrency(123400, "IDR", "id")
+formatCurrency(123400, "IDR", "id");
 // "Rp123.400"
 
-formatCurrency(123400, "EUR", "de")
+formatCurrency(123400, "EUR", "de");
 // "123.400 €"
 ```
 
