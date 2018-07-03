@@ -42,6 +42,11 @@ const symbolOverrides = {
   ETH: { location: { start: true }, forLocales: { en: true } }
 };
 
+// Feature detection for Intl.NumberFormat
+function IntlNumberFormatSupported() {
+  return !!(typeof Intl == "object" && Intl && typeof Intl.NumberFormat == "function");
+}
+
 // Function to transform the output from Intl.NumberFormat#format
 const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   // If currency code remains in front
@@ -75,6 +80,25 @@ const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   return formattedCurrency;
 };
 
+// Generates a primitive fallback formatter with no symbol support.
+function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
+  isoCode = isoCode.toUpperCase();
+
+  if (numDecimals > 2) {
+    return {
+      format: value => {
+        return `${isoCode} ${value.toFixed(numDecimals)}`;
+      }
+    };
+  } else {
+    return {
+      format: value => {
+        return `${isoCode} ${value.toLocaleString(locale)}`;
+      }
+    };
+  }
+}
+
 // State variables
 let currentISOCode;
 let currencyFormatterNormal;
@@ -84,39 +108,50 @@ let currencyFormatterSmall;
 let currencyFormatterVerySmall;
 
 function initializeFormatters(isoCode, locale) {
-  currencyFormatterNormal = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: isoCode,
-    currencyDisplay: "symbol"
-  });
-  currencyFormatterNoDecimal = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: isoCode,
-    currencyDisplay: "symbol",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  });
-  currencyFormatterMedium = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: isoCode,
-    currencyDisplay: "symbol",
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3
-  });
-  currencyFormatterSmall = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: isoCode,
-    currencyDisplay: "symbol",
-    minimumFractionDigits: 6,
-    maximumFractionDigits: 6
-  });
-  currencyFormatterVerySmall = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: isoCode,
-    currencyDisplay: "symbol",
-    minimumFractionDigits: 8,
-    maximumFractionDigits: 8
-  });
+  const isNumberFormatSupported = IntlNumberFormatSupported();
+  currencyFormatterNormal = isNumberFormatSupported
+    ? new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: isoCode,
+        currencyDisplay: "symbol"
+      })
+    : generateFallbackFormatter(isoCode, locale);
+  currencyFormatterNoDecimal = isNumberFormatSupported
+    ? new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: isoCode,
+        currencyDisplay: "symbol",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      })
+    : generateFallbackFormatter(isoCode, locale);
+  currencyFormatterMedium = isNumberFormatSupported
+    ? new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: isoCode,
+        currencyDisplay: "symbol",
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3
+      })
+    : generateFallbackFormatter(isoCode, locale, 3);
+  currencyFormatterSmall = isNumberFormatSupported
+    ? new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: isoCode,
+        currencyDisplay: "symbol",
+        minimumFractionDigits: 6,
+        maximumFractionDigits: 6
+      })
+    : generateFallbackFormatter(isoCode, locale, 6);
+  currencyFormatterVerySmall = isNumberFormatSupported
+    ? new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: isoCode,
+        currencyDisplay: "symbol",
+        minimumFractionDigits: 8,
+        maximumFractionDigits: 8
+      })
+    : generateFallbackFormatter(isoCode, locale, 8);
 }
 
 // Moderate crypto amount threshold
