@@ -50,14 +50,14 @@ function IntlNumberFormatSupported() {
 // Function to transform the output from Intl.NumberFormat#format
 const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   // If currency code remains in front
-  const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}/);
+  const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}\s?/);
   if (currencyCodeFrontMatch != null) {
-    const code = currencyCodeFrontMatch[0];
+    const code = currencyCodeFrontMatch[0].trim(); // trim possible trailing space
 
     // Replace currency code with symbol if whitelisted.
     const overrideObj = symbolOverrides[code];
     if (overrideObj && overrideObj.location.start && overrideObj.forLocales[locale]) {
-      return formattedCurrency.replace(code, currencySymbols[code]);
+      return formattedCurrency.replace(currencyCodeFrontMatch[0], currencySymbols[code]);
     } else {
       return formattedCurrency;
     }
