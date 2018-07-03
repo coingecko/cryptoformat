@@ -48,7 +48,7 @@ function IntlNumberFormatSupported() {
 }
 
 // Function to transform the output from Intl.NumberFormat#format
-const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
+function formatCurrencyOverride(formattedCurrency, locale = "en") {
   // If currency code remains in front
   const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}\s?/);
   if (currencyCodeFrontMatch != null) {
@@ -78,7 +78,7 @@ const formatCurrencyOverride = function(formattedCurrency, locale = "en") {
   }
 
   return formattedCurrency;
-};
+}
 
 // Generates a primitive fallback formatter with no symbol support.
 function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
@@ -159,7 +159,7 @@ const MEDIUM_CRYPTO_THRESHOLD = 50;
 // Large crypto amount threshold
 const LARGE_CRYPTO_THRESHOLD = 1000;
 
-export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
+export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
   isoCode = isoCode.toUpperCase();
 
   if (currentISOCode !== isoCode) {
@@ -218,4 +218,4 @@ export const formatCurrency = (amount, isoCode, locale = "en", raw = false) => {
       return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
     }
   }
-};
+}
