@@ -1,5 +1,9 @@
 # Cryptoformat
 
+[![Build Status](https://img.shields.io/travis/coingecko/cryptoformat.svg?style=flat-square)](https://travis-ci.org/coingecko/cryptoformat)
+[![NPM package](https://img.shields.io/npm/v/@coingecko/cryptoformat.svg?style=flat-square)](https://www.npmjs.com/package/coingecko/cryptoformat)
+![NPM license](https://img.shields.io/npm/l/@coingecko/cryptoformat.svg?style=flat-square)
+
 `cryptoformat` is used by coingecko.com to format crypto and fiat values.
 
 Often an altcoin can be worth much less than $0.01 USD, and thus we need to format this value by providing more decimal places in the formatting to prevent losing precious information.
