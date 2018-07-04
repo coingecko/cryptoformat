@@ -1,4 +1,4 @@
-import { formatCurrency, isCrypto } from "./index";
+import { formatCurrency, isCrypto, clearCache } from "./index";
 
 test("isCrypto", () => {
   expect(isCrypto("BTC")).toBe(true);
@@ -76,6 +76,7 @@ describe("is fiat", () => {
 describe("Intl.NumberFormat not supported", () => {
   beforeAll(() => {
     Intl.NumberFormat = null;
+    clearCache();
   });
 
   describe("is BTC or ETH", () => {

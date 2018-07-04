@@ -47,6 +47,14 @@ function IntlNumberFormatSupported() {
   return !!(typeof Intl == "object" && Intl && typeof Intl.NumberFormat == "function");
 }
 
+function isBTCETH(isoCode) {
+  return isoCode === "BTC" || isoCode === "ETH";
+}
+
+export function isCrypto(isoCode) {
+  return isBTCETH(isoCode) || supportedCurrencySymbols[isoCode] == null;
+}
+
 // Function to transform the output from Intl.NumberFormat#format
 function formatCurrencyOverride(formattedCurrency, locale = "en") {
   // If currency code remains in front
@@ -99,14 +107,6 @@ function generateIntlNumberFormatter(isoCode, locale, numDecimals) {
   return formatter;
 }
 
-function isBTCETH(isoCode) {
-  return isoCode === "BTC" || isoCode === "ETH";
-}
-
-export function isCrypto(isoCode) {
-  return isBTCETH(isoCode) || supportedCurrencySymbols[isoCode] == null;
-}
-
 // Generates a primitive fallback formatter with no symbol support.
 function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
   isoCode = isoCode.toUpperCase();
@@ -130,6 +130,16 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
   }
 }
 
+function generateFormatter(isoCode, locale, numDecimals) {
+  const isNumberFormatSupported = IntlNumberFormatSupported();
+
+  const useIntlNumberFormatter =
+    isNumberFormatSupported && (!isCrypto(isoCode) || isBTCETH(isoCode));
+  return useIntlNumberFormatter
+    ? generateIntlNumberFormatter(isoCode, locale, numDecimals)
+    : generateFallbackFormatter(isoCode, locale, numDecimals);
+}
+
 // State variables
 let currentISOCode;
 let currencyFormatterNormal;
@@ -138,28 +148,42 @@ let currencyFormatterMedium;
 let currencyFormatterSmall;
 let currencyFormatterVerySmall;
 
+// If a page has to display multiple currencies, formatters would have to be created for each of them
+// To save some effort, we save formatters for reuse
+let formattersCache = {};
+
+export function clearCache() {
+  formattersCache = {};
+}
+
 function initializeFormatters(isoCode, locale) {
-  const isNumberFormatSupported = IntlNumberFormatSupported();
-  const crypto = isCrypto(isoCode);
+  const cachedFormatter = formattersCache[isoCode];
 
-  const useIntlNumberFormatter =
-    isNumberFormatSupported && (!isCrypto(isoCode) || isBTCETH(isoCode));
+  currencyFormatterNormal = cachedFormatter
+    ? cachedFormatter.currencyFormatterNormal
+    : generateFormatter(isoCode, locale);
+  currencyFormatterNoDecimal = cachedFormatter
+    ? cachedFormatter.currencyFormatterNoDecimal
+    : generateFormatter(isoCode, locale, 0);
+  currencyFormatterMedium = cachedFormatter
+    ? cachedFormatter.currencyFormatterMedium
+    : generateFormatter(isoCode, locale, 3);
+  currencyFormatterSmall = cachedFormatter
+    ? cachedFormatter.currencyFormatterSmall
+    : generateFormatter(isoCode, locale, 6);
+  currencyFormatterVerySmall = cachedFormatter
+    ? cachedFormatter.currencyFormatterVerySmall
+    : generateFormatter(isoCode, locale, 8);
 
-  currencyFormatterNormal = useIntlNumberFormatter
-    ? generateIntlNumberFormatter(isoCode, locale)
-    : generateFallbackFormatter(isoCode, locale);
-  currencyFormatterNoDecimal = useIntlNumberFormatter
-    ? generateIntlNumberFormatter(isoCode, locale, 0)
-    : generateFallbackFormatter(isoCode, locale);
-  currencyFormatterMedium = useIntlNumberFormatter
-    ? generateIntlNumberFormatter(isoCode, locale, 3)
-    : generateFallbackFormatter(isoCode, locale, 3);
-  currencyFormatterSmall = useIntlNumberFormatter
-    ? generateIntlNumberFormatter(isoCode, locale, 6)
-    : generateFallbackFormatter(isoCode, locale, 6);
-  currencyFormatterVerySmall = useIntlNumberFormatter
-    ? generateIntlNumberFormatter(isoCode, locale, 8)
-    : generateFallbackFormatter(isoCode, locale, 8);
+  // Save in cache
+  if (cachedFormatter == null) {
+    formattersCache[isoCode] = {};
+    formattersCache[isoCode].currencyFormatterNormal = currencyFormatterNormal;
+    formattersCache[isoCode].currencyFormatterNoDecimal = currencyFormatterNoDecimal;
+    formattersCache[isoCode].currencyFormatterMedium = currencyFormatterMedium;
+    formattersCache[isoCode].currencyFormatterSmall = currencyFormatterSmall;
+    formattersCache[isoCode].currencyFormatterVerySmall = currencyFormatterVerySmall;
+  }
 }
 
 // Moderate crypto amount threshold
