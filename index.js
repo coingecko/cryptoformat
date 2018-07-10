@@ -157,7 +157,8 @@ export function clearCache() {
 }
 
 function initializeFormatters(isoCode, locale) {
-  const cachedFormatter = formattersCache[isoCode];
+  const cacheKey = `${isoCode}-${locale}`;
+  const cachedFormatter = formattersCache[cacheKey];
 
   currencyFormatterNormal = cachedFormatter
     ? cachedFormatter.currencyFormatterNormal
@@ -177,12 +178,12 @@ function initializeFormatters(isoCode, locale) {
 
   // Save in cache
   if (cachedFormatter == null) {
-    formattersCache[isoCode] = {};
-    formattersCache[isoCode].currencyFormatterNormal = currencyFormatterNormal;
-    formattersCache[isoCode].currencyFormatterNoDecimal = currencyFormatterNoDecimal;
-    formattersCache[isoCode].currencyFormatterMedium = currencyFormatterMedium;
-    formattersCache[isoCode].currencyFormatterSmall = currencyFormatterSmall;
-    formattersCache[isoCode].currencyFormatterVerySmall = currencyFormatterVerySmall;
+    formattersCache[cacheKey] = {};
+    formattersCache[cacheKey].currencyFormatterNormal = currencyFormatterNormal;
+    formattersCache[cacheKey].currencyFormatterNoDecimal = currencyFormatterNoDecimal;
+    formattersCache[cacheKey].currencyFormatterMedium = currencyFormatterMedium;
+    formattersCache[cacheKey].currencyFormatterSmall = currencyFormatterSmall;
+    formattersCache[cacheKey].currencyFormatterVerySmall = currencyFormatterVerySmall;
   }
 }
 
