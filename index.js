@@ -142,6 +142,7 @@ function generateFormatter(isoCode, locale, numDecimals) {
 
 // State variables
 let currentISOCode;
+let currentLocale;
 let currencyFormatterNormal;
 let currencyFormatterNoDecimal;
 let currencyFormatterMedium;
@@ -195,8 +196,9 @@ const LARGE_CRYPTO_THRESHOLD = 1000;
 export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
   isoCode = isoCode.toUpperCase();
 
-  if (currentISOCode !== isoCode) {
+  if (currentISOCode !== isoCode || currentLocale != locale) {
     currentISOCode = isoCode;
+    currentLocale = locale;
 
     // Formatters are tied to currency code, we try to initialize as infrequently as possible.
     initializeFormatters(isoCode, locale);

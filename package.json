@@ -1,6 +1,6 @@
 {
   "name": "@coingecko/cryptoformat",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Javascript library to format and display cryptocurrencies and fiat",
   "main": "index.js",
   "scripts": {
