@@ -38,6 +38,8 @@ formatCurrency(123400, "EUR", "de");
 // "123.400 €"
 ```
 
+`cryptoformat` tries to cache formatters for reuse internally. If same locale and currency is used, the cached formatter will be used.
+
 ## Known Issues
 
 1.  `Intl.NumberFormat` does not always behave consistently across browsers. `cryptoformat` does some manual overrides in order to ensure that "MYR123.00" is displayed as "RM123.00", for example.
