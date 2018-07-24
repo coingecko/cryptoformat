@@ -1,8 +1,8 @@
 # Cryptoformat
 
-[![Build Status](https://img.shields.io/travis/coingecko/cryptoformat.svg?style=flat-square)](https://travis-ci.org/coingecko/cryptoformat)
-[![NPM package](https://img.shields.io/npm/v/@coingecko/cryptoformat.svg?style=flat-square)](https://www.npmjs.com/package/@coingecko/cryptoformat)
-![NPM license](https://img.shields.io/npm/l/@coingecko/cryptoformat.svg?style=flat-square)
+[![npm version](https://badge.fury.io/js/%40coingecko%2Fcryptoformat.svg)](https://badge.fury.io/js/%40coingecko%2Fcryptoformat)
+[![Build Status](https://travis-ci.org/coingecko/cryptoformat.svg?branch=master)](https://travis-ci.org/keratin/authn-server)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 `cryptoformat` is used by CoinGecko (<https://www.coingecko.com>) to format crypto and fiat values.
 
