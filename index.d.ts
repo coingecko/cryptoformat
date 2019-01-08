@@ -1,0 +1,15 @@
+export function IntlNumberFormatSupported(): boolean;
+
+export function isCrypto(isoCode: string): boolean;
+
+export function clearCache(): void;
+
+// format currency
+export function formatCurrency(amount: number, isoCode: string);
+export function formatCurrency(amount: number, isoCode: string, locale: string);
+export function formatCurrency(
+  amount: number,
+  isoCode: string,
+  locale: string,
+  raw: boolean
+);
