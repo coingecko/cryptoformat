@@ -32,9 +32,10 @@
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0"
   },
-  "types": "src/index.d.ts",
+  "types": "lib/index.d.ts",
   "dependencies": {
-    "babel-core": "^7.0.0-bridge.0"
+    "babel-core": "^7.0.0-bridge.0",
+    "rollup-plugin-copy": "^0.2.3"
   },
   "files": [
     "dist"

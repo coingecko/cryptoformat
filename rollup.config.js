@@ -1,5 +1,6 @@
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
+import copy from "rollup-plugin-copy";
 import pkg from "./package.json";
 
 export default {
@@ -23,6 +24,10 @@ export default {
   ],
   plugins: [
     resolve(), // so Rollup can find `dependencies`
-    commonjs() // so Rollup can convert `dependencies` to an ES module
+    commonjs(), // so Rollup can convert `dependencies` to an ES module
+    copy({
+      "src/index.d.ts": "lib/index.d.ts",
+      verbose: true
+    })
   ]
 };
