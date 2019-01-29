@@ -1,12 +1,15 @@
 {
   "name": "@coingecko/cryptoformat",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "Javascript library to format and display cryptocurrencies and fiat",
-  "main": "src/index.js",
+  "main": "lib/cryptoformat.cjs.js",
+  "module": "lib/cryptoformat.esm.js",
+  "browser": "lib/cryptoformat.umd.js",
   "scripts": {
     "test": "jest",
     "submit": "npm publish --access public",
-    "build": "NODE_ENV=production babel src/index.js --out-dir lib"
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
   },
   "repository": {
     "type": "git",
@@ -19,15 +22,19 @@
   },
   "homepage": "https://github.com/coingecko/cryptoformat#readme",
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.2.3",
-    "babel-jest": "^23.6.0",
-    "jest": "^23.6.0",
-    "regenerator-runtime": "^0.13.1"
+    "@babel/preset-env": "^7.3.1",
+    "babel-jest": "^24.0.0",
+    "jest": "^24.0.0",
+    "regenerator-runtime": "^0.13.1",
+    "rollup": "^1.1.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-copy": "^0.2.3",
+    "rollup-plugin-node-resolve": "^4.0.0"
   },
-  "types": "src/index.d.ts",
-  "dependencies": {
-    "babel-core": "^7.0.0-bridge.0"
-  }
+  "types": "lib/index.d.ts",
+  "dependencies": {},
+  "files": [
+    "lib"
+  ]
 }
