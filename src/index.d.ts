@@ -17,3 +17,10 @@ export function formatCurrency(
   locale: string,
   raw: boolean
 ): string;
+
+// format currency with names
+export function formatCurrencyWithNames(
+  amount: number,
+  isoCode: string,
+  locale: string
+): string;
