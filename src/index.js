@@ -319,3 +319,37 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
     }
   }
 }
+
+export function formatCurrencyWithNames(amount, isoCode, locale = "en") {
+  isoCode = isoCode.toUpperCase();
+  if (currentISOCode !== isoCode || currentLocale != locale) {
+    currentISOCode = isoCode;
+    currentLocale = locale;
+
+    // Formatters are tied to currency code, we try to initialize as infrequently as possible.
+    initializeFormatters(isoCode, locale);
+  }
+
+  const absPrice = Math.abs(Number(amount));
+  let price = 0;
+  let suffix = "";
+  if (absPrice >= 1.0e9) {
+    // If Billion
+    price = absPrice / 1.0e9;
+    suffix = "B";
+  } else if (abs >= 1.0e6) {
+    // If Million
+    price = absPrice / 1.0e6;
+    suffix = "M";
+  } else if (absPrice >= 1.0e3) {
+    // If Thousands
+    price = absPrice / 1.0e3;
+    suffix = "K";
+  }
+  if (isCrypto(isoCode)) {
+    price = Number(price.toFixed(3));
+    return `${price}${suffix} ${isoCode}`;
+  } else {
+    return formatCurrency(price, isoCode, locale, false) + suffix;
+  }
+}
