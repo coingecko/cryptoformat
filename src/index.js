@@ -1,6 +1,6 @@
 // A map of supported currency codes to currency symbols.
 const supportedCurrencySymbols = {
-  BTC: "Ƀ",
+  BTC: "₿",
   ETH: "Ξ",
   USD: "$",
   CAD: "C$",

@@ -1,7 +1,7 @@
 # Cryptoformat
 
 [![npm version](https://badge.fury.io/js/%40coingecko%2Fcryptoformat.svg)](https://badge.fury.io/js/%40coingecko%2Fcryptoformat)
-[![Build Status](https://travis-ci.org/coingecko/cryptoformat.svg?branch=master)](https://travis-ci.org/keratin/authn-server)
+[![Build Status](https://travis-ci.org/coingecko/cryptoformat.svg?branch=master)](https://travis-ci.org/coingecko/cryptoformat)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 `cryptoformat` is used by CoinGecko (<https://www.coingecko.com>) to format crypto and fiat values.
