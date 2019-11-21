@@ -1,4 +1,9 @@
-import { formatCurrency, isCrypto, clearCache } from "./index";
+import {
+  formatCurrency,
+  isCrypto,
+  clearCache,
+  formatCurrencyWithNames
+} from "./index";
 
 test("isCrypto", () => {
   expect(isCrypto("BTC")).toBe(true);
@@ -11,7 +16,9 @@ describe("is crypto", () => {
   describe("raw = true", () => {
     test("returns precision of 8", () => {
       expect(formatCurrency(0.00001, "BTC", "en", true)).toBe("0.000010000000");
-      expect(formatCurrency(0.00001, "DOGE", "en", true)).toBe("0.000010000000");
+      expect(formatCurrency(0.00001, "DOGE", "en", true)).toBe(
+        "0.000010000000"
+      );
     });
   });
 
@@ -82,7 +89,9 @@ describe("Intl.NumberFormat not supported", () => {
   describe("is BTC or ETH", () => {
     describe("raw = true", () => {
       test("returns precision of 8", () => {
-        expect(formatCurrency(0.00001, "BTC", "en", true)).toBe("0.000010000000");
+        expect(formatCurrency(0.00001, "BTC", "en", true)).toBe(
+          "0.000010000000"
+        );
       });
     });
 
@@ -141,6 +150,27 @@ describe("Intl.NumberFormat not supported", () => {
         // Large fiat, no decimals
         expect(formatCurrency(51100, "USD", "en")).toBe("USD 51,100");
       });
+    });
+  });
+});
+
+describe("large number", () => {
+  describe("Billion", () => {
+    const billionVal1 = 9.101222e9;
+    const billionResVal1 = "9.101B";
+    const billionVal2 = 9e9;
+    const billionResVal2 = "9B";
+
+    test("format USD", () => {
+      expect(formatCurrencyWithNames(billionVal1, "USD", "en")).toEqual(
+        "USD " + billionResVal1
+      );
+    });
+
+    test("format BTC", () => {
+      expect(formatCurrencyWithNames(billionVal2, "BTC", "en")).toEqual(
+        billionResVal2 + " BTC"
+      );
     });
   });
 });

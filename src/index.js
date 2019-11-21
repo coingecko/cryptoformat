@@ -57,7 +57,11 @@ const symbolOverrides = {
 
 // Feature detection for Intl.NumberFormat
 function IntlNumberFormatSupported() {
-  return !!(typeof Intl == "object" && Intl && typeof Intl.NumberFormat == "function");
+  return !!(
+    typeof Intl == "object" &&
+    Intl &&
+    typeof Intl.NumberFormat == "function"
+  );
 }
 
 function isBTCETH(isoCode) {
@@ -77,8 +81,15 @@ function formatCurrencyOverride(formattedCurrency, locale = "en") {
 
     // Replace currency code with symbol if whitelisted.
     const overrideObj = symbolOverrides[code];
-    if (overrideObj && overrideObj.location.start && overrideObj.forLocales[locale]) {
-      return formattedCurrency.replace(currencyCodeFrontMatch[0], supportedCurrencySymbols[code]);
+    if (
+      overrideObj &&
+      overrideObj.location.start &&
+      overrideObj.forLocales[locale]
+    ) {
+      return formattedCurrency.replace(
+        currencyCodeFrontMatch[0],
+        supportedCurrencySymbols[code]
+      );
     } else {
       return formattedCurrency;
     }
@@ -91,7 +102,11 @@ function formatCurrencyOverride(formattedCurrency, locale = "en") {
 
     // Replace currency code with symbol if whitelisted.
     const overrideObj = symbolOverrides[code];
-    if (overrideObj && overrideObj.location.end && overrideObj.forLocales[locale]) {
+    if (
+      overrideObj &&
+      overrideObj.location.end &&
+      overrideObj.forLocales[locale]
+    ) {
       return formattedCurrency.replace(code, supportedCurrencySymbols[code]);
     } else {
       return formattedCurrency;
@@ -194,10 +209,14 @@ function initializeFormatters(isoCode, locale) {
   if (cachedFormatter == null) {
     formattersCache[cacheKey] = {};
     formattersCache[cacheKey].currencyFormatterNormal = currencyFormatterNormal;
-    formattersCache[cacheKey].currencyFormatterNoDecimal = currencyFormatterNoDecimal;
+    formattersCache[
+      cacheKey
+    ].currencyFormatterNoDecimal = currencyFormatterNoDecimal;
     formattersCache[cacheKey].currencyFormatterMedium = currencyFormatterMedium;
     formattersCache[cacheKey].currencyFormatterSmall = currencyFormatterSmall;
-    formattersCache[cacheKey].currencyFormatterVerySmall = currencyFormatterVerySmall;
+    formattersCache[
+      cacheKey
+    ].currencyFormatterVerySmall = currencyFormatterVerySmall;
   }
 }
 
@@ -228,19 +247,37 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
     }
 
     if (amount === 0.0) {
-      return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterNormal.format(amount),
+        locale
+      );
     } else if (price >= LARGE_CRYPTO_THRESHOLD) {
       // Large crypto amount, show no decimal value
-      return formatCurrencyOverride(currencyFormatterNoDecimal.format(amount), locale);
-    } else if (price >= MEDIUM_CRYPTO_THRESHOLD && price < LARGE_CRYPTO_THRESHOLD) {
+      return formatCurrencyOverride(
+        currencyFormatterNoDecimal.format(amount),
+        locale
+      );
+    } else if (
+      price >= MEDIUM_CRYPTO_THRESHOLD &&
+      price < LARGE_CRYPTO_THRESHOLD
+    ) {
       // Medium crypto amount, show 3 fraction digits
-      return formatCurrencyOverride(currencyFormatterMedium.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterMedium.format(amount),
+        locale
+      );
     } else if (price >= 1.0 && price < MEDIUM_CRYPTO_THRESHOLD) {
       //  crypto amount, show 6 fraction digits
-      return formatCurrencyOverride(currencyFormatterSmall.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterSmall.format(amount),
+        locale
+      );
     } else {
       // Crypto amount < 1, show 8 fraction digits
-      return formatCurrencyOverride(currencyFormatterVerySmall.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterVerySmall.format(amount),
+        locale
+      );
     }
   } else {
     if (raw) {
@@ -254,16 +291,65 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
     }
 
     if (amount === 0.0) {
-      return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterNormal.format(amount),
+        locale
+      );
     } else if (amount < 0.05) {
-      return formatCurrencyOverride(currencyFormatterVerySmall.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterVerySmall.format(amount),
+        locale
+      );
     } else if (amount < 1.0) {
-      return formatCurrencyOverride(currencyFormatterSmall.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterSmall.format(amount),
+        locale
+      );
     } else if (amount > 20000) {
-      return formatCurrencyOverride(currencyFormatterNoDecimal.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterNoDecimal.format(amount),
+        locale
+      );
     } else {
       // Let the formatter do what it seems best. In particular, we should not set any fraction amount for Japanese Yen
-      return formatCurrencyOverride(currencyFormatterNormal.format(amount), locale);
+      return formatCurrencyOverride(
+        currencyFormatterNormal.format(amount),
+        locale
+      );
     }
+  }
+}
+
+export function formatCurrencyWithNames(amount, isoCode, locale = "en") {
+  isoCode = isoCode.toUpperCase();
+  if (currentISOCode !== isoCode || currentLocale != locale) {
+    currentISOCode = isoCode;
+    currentLocale = locale;
+
+    // Formatters are tied to currency code, we try to initialize as infrequently as possible.
+    initializeFormatters(isoCode, locale);
+  }
+
+  const absPrice = Math.abs(Number(amount));
+  let price = 0;
+  let suffix = "";
+  if (absPrice >= 1.0e9) {
+    // If Billion
+    price = absPrice / 1.0e9;
+    suffix = "B";
+  } else if (abs >= 1.0e6) {
+    // If Million
+    price = absPrice / 1.0e6;
+    suffix = "M";
+  } else if (absPrice >= 1.0e3) {
+    // If Thousands
+    price = absPrice / 1.0e3;
+    suffix = "K";
+  }
+  if (isCrypto(isoCode)) {
+    price = Number(price.toFixed(3));
+    return `${price}${suffix} ${isoCode}`;
+  } else {
+    return formatCurrency(price, isoCode, locale, false) + suffix;
   }
 }
