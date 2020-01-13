@@ -76,9 +76,15 @@ describe("is fiat", () => {
 });
 
 describe("Intl.NumberFormat not supported", () => {
+  let temp = Intl.NumberFormat;
+
   beforeAll(() => {
     Intl.NumberFormat = null;
     clearCache();
+  });
+
+  afterAll(() => {
+    Intl.NumberFormat = temp;
   });
 
   describe("is BTC or ETH", () => {
@@ -146,5 +152,17 @@ describe("Intl.NumberFormat not supported", () => {
         expect(formatCurrency(51100, "USD", "en")).toBe("USD 51,100");
       });
     });
+  });
+});
+
+describe("Format Currency correctly", () => {
+  beforeAll(() => {
+    clearCache();
+  });
+
+  // https://github.com/coingecko/cryptoformat/issues/18
+  it("formats JPY correctly", () => {
+    expect(formatCurrency(123400, "JPY", "en")).toEqual("¥123,400");
+    expect(formatCurrency(32.034, "JPY", "en")).toEqual("¥32.03");
   });
 });
