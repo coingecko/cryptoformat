@@ -1,4 +1,5 @@
 import { formatCurrency, isCrypto, clearCache } from "./index";
+import { formatLargeValueCurrency } from ".";
 
 test("isCrypto", () => {
   expect(isCrypto("BTC")).toBe(true);
@@ -164,5 +165,47 @@ describe("Format Currency correctly", () => {
   it("formats JPY correctly", () => {
     expect(formatCurrency(123400, "JPY", "en")).toEqual("¥123,400");
     expect(formatCurrency(32.034, "JPY", "en")).toEqual("¥32.03");
+  });
+});
+
+describe("Format large value currency", () => {
+  beforeAll(() => {
+    clearCache();
+  });
+
+  it("Formats thousands", () => {
+    expect(formatLargeValueCurrency(1234.02, "USD", "en")).toEqual("$1.23K");
+    expect(formatLargeValueCurrency(11234.02, "JPY", "en")).toEqual("¥11.23K");
+    expect(formatLargeValueCurrency(1234.5, "PHP", "en")).toEqual("₱1.23K");
+    expect(formatLargeValueCurrency(1234, "DOGE", "en")).toEqual("1.234K DOGE");
+    expect(formatLargeValueCurrency(1234, "BTC", "en")).toEqual("₿1.234K");
+  });
+
+  it("Formats millions", () => {
+    expect(formatLargeValueCurrency(1234567.02, "USD", "en")).toEqual("$1.23M");
+    expect(formatLargeValueCurrency(11234567.02, "JPY", "en")).toEqual(
+      "¥11.23M"
+    );
+    expect(formatLargeValueCurrency(1234567, "PHP", "en")).toEqual("₱1.23M");
+    expect(formatLargeValueCurrency(1234567, "DOGE", "en")).toEqual(
+      "1.235M DOGE"
+    );
+    expect(formatLargeValueCurrency(1234567, "BTC", "en")).toEqual("₿1.235M");
+  });
+
+  it("Formats billions", () => {
+    expect(formatLargeValueCurrency(1234567890.02, "USD", "en")).toEqual(
+      "$1.23B"
+    );
+    expect(formatLargeValueCurrency(11234567890.02, "JPY", "en")).toEqual(
+      "¥11.23B"
+    );
+    expect(formatLargeValueCurrency(1234567890, "PHP", "en")).toEqual("₱1.23B");
+    expect(formatLargeValueCurrency(1234567890, "DOGE", "en")).toEqual(
+      "1.235B DOGE"
+    );
+    expect(formatLargeValueCurrency(1234567890, "BTC", "en")).toEqual(
+      "₿1.235B"
+    );
   });
 });

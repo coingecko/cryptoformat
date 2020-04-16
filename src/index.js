@@ -41,7 +41,7 @@ const supportedCurrencySymbols = {
   TRY: "₺",
   XAU: "XAU",
   XAG: "XAG",
-  XDR: "XDR"
+  XDR: "XDR",
 };
 
 // A map of override objects to apply.
@@ -52,7 +52,7 @@ const symbolOverrides = {
   SGD: { location: { start: true }, forLocales: { en: true } },
   PHP: { location: { start: true }, forLocales: { en: true } },
   BTC: { location: { start: true }, forLocales: { en: true } },
-  ETH: { location: { start: true }, forLocales: { en: true } }
+  ETH: { location: { start: true }, forLocales: { en: true } },
 };
 
 // Feature detection for Intl.NumberFormat
@@ -125,7 +125,7 @@ function generateIntlNumberFormatter(isoCode, locale, numDecimals) {
       currency: isoCode,
       currencyDisplay: "symbol",
       minimumFractionDigits: numDecimals,
-      maximumFractionDigits: numDecimals
+      maximumFractionDigits: numDecimals,
     });
   } catch (e) {
     // Unsupported currency, etc.
@@ -141,19 +141,19 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
 
   if (numDecimals > 2) {
     return {
-      format: value => {
+      format: (value) => {
         return isCrypto(isoCode)
           ? `${value.toFixed(numDecimals)} ${isoCode}`
           : `${isoCode} ${value.toFixed(numDecimals)}`;
-      }
+      },
     };
   } else {
     return {
-      format: value => {
+      format: (value) => {
         return isCrypto(isoCode)
           ? `${value.toLocaleString(locale)} ${isoCode}`
           : `${isoCode} ${value.toLocaleString(locale)}`;
-      }
+      },
     };
   }
 }
@@ -329,5 +329,40 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
         locale
       );
     }
+  }
+}
+
+export function formatLargeValueCurrency(amount, isoCode, locale = "en") {
+  isoCode = isoCode.toUpperCase();
+  const formattedAmount = formatNumber(amount);
+  if (isCrypto(isoCode)) {
+    const formatted = Number.parseFloat(formattedAmount.value).toFixed(3);
+    return isBTCETH(isoCode)
+      ? supportedCurrencySymbols[isoCode] + formatted + formattedAmount.append
+      : formatted + formattedAmount.append + " " + isoCode;
+  } else {
+    const formatted = formatCurrency(formattedAmount.value, isoCode, locale);
+    return formatted + formattedAmount.append;
+  }
+}
+
+function formatNumber(val) {
+  if (Math.abs(Number(val)) >= 1.0e9) {
+    return {
+      append: "B",
+      value: Math.abs(Number(val)) / 1.0e9,
+    };
+  } else if (Math.abs(Number(val)) >= 1.0e6) {
+    return {
+      append: "M",
+      value: Math.abs(Number(val)) / 1.0e6,
+    };
+  } else if (Math.abs(Number(val)) >= 1.0e3) {
+    return {
+      append: "K",
+      value: Math.abs(Number(val)) / 1.0e3,
+    };
+  } else {
+    return { append: "", value: val };
   }
 }
