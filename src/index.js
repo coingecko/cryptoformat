@@ -338,31 +338,31 @@ export function formatLargeValueCurrency(amount, isoCode, locale = "en") {
   if (isCrypto(isoCode)) {
     const formatted = Number.parseFloat(formattedAmount.value).toFixed(3);
     return isBTCETH(isoCode)
-      ? supportedCurrencySymbols[isoCode] + formatted + formattedAmount.append
-      : formatted + formattedAmount.append + " " + isoCode;
+      ? supportedCurrencySymbols[isoCode] + formatted + formattedAmount.suffix
+      : formatted + formattedAmount.suffix + " " + isoCode;
   } else {
     const formatted = formatCurrency(formattedAmount.value, isoCode, locale);
-    return formatted + formattedAmount.append;
+    return formatted + formattedAmount.suffix;
   }
 }
 
 function formatNumber(val) {
   if (Math.abs(Number(val)) >= 1.0e9) {
     return {
-      append: "B",
+      suffix: "B",
       value: Math.abs(Number(val)) / 1.0e9,
     };
   } else if (Math.abs(Number(val)) >= 1.0e6) {
     return {
-      append: "M",
+      suffix: "M",
       value: Math.abs(Number(val)) / 1.0e6,
     };
   } else if (Math.abs(Number(val)) >= 1.0e3) {
     return {
-      append: "K",
+      suffix: "K",
       value: Math.abs(Number(val)) / 1.0e3,
     };
   } else {
-    return { append: "", value: val };
+    return { suffix: "", value: val };
   }
 }
