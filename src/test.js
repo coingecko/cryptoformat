@@ -39,6 +39,20 @@ describe("is crypto", () => {
       expect(formatCurrency(1.1, "LTC", "en")).toBe("1.100000 LTC");
     });
   });
+
+  describe("noDecimal = true", () => {
+    test("returns without decimal", () => {
+      expect(formatCurrency(1001.4543, "BTC", "en", false, true)).toBe("₿1,001");
+      expect(formatCurrency(51.12342, "BTC", "en", false, true)).toBe("₿51");
+      expect(formatCurrency(11.1432, "BTC", "en", false, true)).toBe("₿11");
+      expect(formatCurrency(9.234, "ETH", "en", false, true)).toBe("Ξ9");
+    });
+
+    test("returns decimal when less than 1", () => {
+      expect(formatCurrency(0.0, "BTC", "en", false, true)).toBe("₿0.00");
+      expect(formatCurrency(0.5, "BTC", "en", false, true)).toBe("₿0.50000000");
+    })
+  });
 });
 
 describe("is fiat", () => {
@@ -72,6 +86,20 @@ describe("is fiat", () => {
       // Large fiat, no decimals
       expect(formatCurrency(51100, "USD", "en")).toBe("$51,100");
     });
+  });
+
+  describe("noDecimal = true", () => {
+    test("returns without decimal", () => {
+      expect(formatCurrency(4000.23, "USD", "en", false, true)).toBe("$4,000");
+      expect(formatCurrency(1001.58, "USD", "en", false, true)).toBe("$1,002");
+      expect(formatCurrency(51100.3, "USD", "en", false, true)).toBe("$51,100");
+    });
+
+    test("returns decimal when less than 1", () => {
+      expect(formatCurrency(0.0, "USD", "en", false, true)).toBe("$0.00");
+      expect(formatCurrency(0.5, "USD", "en", false, true)).toBe("$0.500000");
+      expect(formatCurrency(0.00002, "USD", "en", false, true)).toBe("$0.00002000");
+    })
   });
 });
 

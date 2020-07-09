@@ -232,7 +232,7 @@ const MEDIUM_CRYPTO_THRESHOLD = 50;
 // Large crypto amount threshold
 const LARGE_CRYPTO_THRESHOLD = 1000;
 
-export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
+export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDecimal = false) {
   isoCode = isoCode.toUpperCase();
 
   if (currentISOCode !== isoCode || currentLocale != locale) {
@@ -245,6 +245,12 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
 
   if (isCrypto(isoCode)) {
     let price = parseFloat(amount);
+    if (noDecimal === true && amount > 1.0) {
+      return formatCurrencyOverride(
+        currencyFormatterNoDecimal.format(amount),
+        locale
+      );
+    }
 
     if (raw) {
       if (amount === 0.0) {
@@ -287,6 +293,13 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false) {
       );
     }
   } else {
+    if (noDecimal === true && amount > 1.0) {
+      return formatCurrencyOverride(
+        currencyFormatterNoDecimal.format(amount),
+        locale
+      );
+    }
+
     if (raw) {
       if (amount < 0.001) {
         return amount.toFixed(8);
