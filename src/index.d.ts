@@ -23,6 +23,13 @@ export function formatCurrency(
   locale: string,
   raw: true
 ): number;
+export function formatCurrency(
+  amount: number,
+  isoCode: string,
+  locale: string,
+  raw: true,
+  noDecimal: boolean
+): number;
 
 // format large value currency
 export function formatLargeValueCurrency(
