@@ -17,3 +17,10 @@ export function formatCurrency(
   locale: string,
   raw: boolean
 ): string;
+export function formatCurrency(
+  amount: number,
+  isoCode: string,
+  locale: string,
+  raw: boolean,
+  noDecimal: boolean
+): number;
