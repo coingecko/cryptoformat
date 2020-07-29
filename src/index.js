@@ -300,42 +300,38 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDe
       );
     }
 
+    const unsigned_amount = Math.abs(amount);
     if (raw) {
-      if (amount < 0.001) {
+      if (unsigned_amount < 0.001) {
         return amount.toFixed(8);
-      } else if (amount < 1.0) {
+      } else if (unsigned_amount < 1.0) {
         return amount.toFixed(6);
       } else {
         return amount.toFixed(2);
       }
     }
 
-    if (amount === 0.0) {
+    if (unsigned_amount === 0.0) {
       return formatCurrencyOverride(
         currencyFormatterNormal.format(amount),
         locale
       );
-    } else if (amount < 0) {
-      return formatCurrencyOverride(
-        currencyFormatterNormal.format(amount),
-        locale
-      );
-    } else if (amount < 0.05) {
+    } else if (unsigned_amount < 0.05) {
       return formatCurrencyOverride(
         currencyFormatterVerySmall.format(amount),
         locale
       );
-    } else if (amount < 1.0) {
+    } else if (unsigned_amount < 1.0) {
       return formatCurrencyOverride(
         currencyFormatterSmall.format(amount),
         locale
       );
-    } else if (isoCode === "JPY" && amount < 100) {
+    } else if (isoCode === "JPY" && unsigned_amount < 100) {
       return formatCurrencyOverride(
         currencyFormatterTwoDecimal.format(amount),
         locale
       );
-    } else if (amount > 20000) {
+    } else if (unsigned_amount > 20000) {
       return formatCurrencyOverride(
         currencyFormatterNoDecimal.format(amount),
         locale

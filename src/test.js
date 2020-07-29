@@ -77,8 +77,14 @@ describe("is fiat", () => {
       // Very small fiat, 8 decimals
       expect(formatCurrency(0.00002, "USD", "en")).toBe("$0.00002000");
 
+      // Negative Fiat, 8 decimals, if less than 0.05
+      expect(formatCurrency(-0.04, "USD", "en")).toBe("-$0.04000000");
+
+      // Negative Fiat, 6 decimals, if less than 1
+      expect(formatCurrency(-0.50, "USD", "en")).toBe("-$0.500000");
+
       // Negative Fiat, 2 decimals
-      expect(formatCurrency(-0.50, "USD", "en")).toBe("-$0.50");
+      expect(formatCurrency(-1.50, "USD", "en")).toBe("-$1.50");
 
       // Small fiat, 6 decimals
       expect(formatCurrency(0.5, "USD", "en")).toBe("$0.500000");
