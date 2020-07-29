@@ -315,6 +315,11 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDe
         currencyFormatterNormal.format(amount),
         locale
       );
+    } else if (amount < 0) {
+      return formatCurrencyOverride(
+        currencyFormatterNormal.format(amount),
+        locale
+      );
     } else if (amount < 0.05) {
       return formatCurrencyOverride(
         currencyFormatterVerySmall.format(amount),
