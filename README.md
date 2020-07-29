@@ -36,6 +36,11 @@ formatCurrency(123400, "IDR", "id");
 
 formatCurrency(123400, "EUR", "de");
 // "123.400 €"
+
+// Provide noDecimal = true to explicitly remove decimal for numbers above > 1.0
+formatCurrency(4000.23, "USD", "en", false, true);
+// "$4,000"
+
 ```
 
 `cryptoformat` tries to cache formatters for reuse internally. If same locale and currency is used, the cached formatter will be used.

@@ -36,8 +36,13 @@
   "dependencies": {},
   "files": [
     "lib"
+<<<<<<< HEAD
   ],
   "engines": {
     "node": ">=10"
   }
 }
+=======
+  ]
+}
+>>>>>>> d686eac16eab5b591001d00435e61dd627f5cedc
