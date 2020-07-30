@@ -15,7 +15,20 @@ export function formatCurrency(
   amount: number,
   isoCode: string,
   locale: string,
-  raw: boolean
+  raw: false
+): string;
+export function formatCurrency(
+  amount: number,
+  isoCode: string,
+  locale: string,
+  raw: true
+): number;
+
+// format large value currency
+export function formatLargeValueCurrency(
+  amount: number,
+  isoCode: string,
+  locale?: string
 ): string;
 export function formatCurrency(
   amount: number,
