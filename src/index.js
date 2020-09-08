@@ -117,16 +117,22 @@ function formatCurrencyOverride(formattedCurrency, locale = "en") {
 }
 
 // Generates a formatter from Intl.NumberFormat
-function generateIntlNumberFormatter(isoCode, locale, numDecimals) {
+function generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig) {
   let formatter;
   try {
-    formatter = new Intl.NumberFormat(locale, {
+    const params = {
       style: "currency",
       currency: isoCode,
-      currencyDisplay: "symbol",
-      minimumFractionDigits: numDecimals,
-      maximumFractionDigits: numDecimals
-    });
+      currencyDisplay: "symbol"
+    }
+    if(numDecimals !== undefined) {
+      params.minimumFractionDigits = numDecimals;
+      params.maximumFractionDigits = numDecimals;
+    } 
+    else if(numSigFig !== undefined) {
+      params.maximumSignificantDigits = numSigFig;
+    }
+    formatter = new Intl.NumberFormat(locale, params);
   } catch (e) {
     // Unsupported currency, etc.
     // Use primitive fallback
@@ -158,13 +164,13 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
   }
 }
 
-function generateFormatter(isoCode, locale, numDecimals) {
+function generateFormatter(isoCode, locale, numDecimals , numSigFig) {
   const isNumberFormatSupported = IntlNumberFormatSupported();
 
   const useIntlNumberFormatter =
     isNumberFormatSupported && (!isCrypto(isoCode) || isBTCETH(isoCode));
   return useIntlNumberFormatter
-    ? generateIntlNumberFormatter(isoCode, locale, numDecimals)
+    ? generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig)
     : generateFallbackFormatter(isoCode, locale, numDecimals);
 }
 
@@ -243,14 +249,37 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDe
     initializeFormatters(isoCode, locale);
   }
 
-  if (isCrypto(isoCode)) {
-    let price = parseFloat(amount);
-    if (noDecimal === true && amount > 1.0) {
+  if (noDecimal === true && amount > 1.0) {
+    return formatCurrencyOverride(
+      currencyFormatterNoDecimal.format(amount),
+      locale
+    );
+  } else if(typeof noDecimal === 'object' && noDecimal !== null) {
+    if (raw) {
+      // Limit to max n decimal places if applicable
+      let raw_amount = noDecimal.hasOwnProperty('dp') ? amount.toFixed(noDecimal.dp) : amount;
+      // Round off to number of significant figures without trailing 0's
+      return `${parseFloat(raw_amount).toPrecision(noDecimal.sf) / 1}`;
+    } else if (noDecimal.hasOwnProperty('dp') && noDecimal.hasOwnProperty('sf')){
+      // Show specified number of significant digits with cutoff of specified fraction digits
+      const currencyFormatterCustom = generateFormatter(isoCode, locale, undefined, noDecimal.sf)
+      
       return formatCurrencyOverride(
-        currencyFormatterNoDecimal.format(amount),
+        currencyFormatterCustom.format(Number.parseFloat(amount.toFixed(noDecimal.dp))),
         locale
       );
-    }
+    } else {
+      const currencyFormatterCustom = generateFormatter(isoCode, locale, noDecimal.dp, noDecimal.sf)
+      
+      return formatCurrencyOverride(
+        currencyFormatterCustom.format(amount),
+        locale
+      );
+    } 
+  }
+
+  if (isCrypto(isoCode)) {
+    let price = parseFloat(amount);
 
     if (raw) {
       if (amount === 0.0) {
@@ -293,13 +322,6 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDe
       );
     }
   } else {
-    if (noDecimal === true && amount > 1.0) {
-      return formatCurrencyOverride(
-        currencyFormatterNoDecimal.format(amount),
-        locale
-      );
-    }
-
     const unsigned_amount = Math.abs(amount);
     if (raw) {
       if (unsigned_amount < 0.001) {
