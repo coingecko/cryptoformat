@@ -209,26 +209,49 @@ describe("Accepts object parameter", () => {
     clearCache();
   });
 
+  it("defaults to noDecimal = false", () => {
+    expect(formatCurrency(1005.1005, "USD", "en", false, {})).toEqual("$1,005.10");
+  })
+
   it("formats decimal places correctly", () => {
-    expect(formatCurrency(123.456, "USD", "en", false, {dp: 1})).toEqual("$123.5");
+    // Show specified number of decimal places
+    expect(formatCurrency(123.456, "USD", "en", false, {dp:1})).toEqual("$123.5");
     expect(formatCurrency(1000.12345, "USD", "en", false, {dp: 3})).toEqual("$1,000.123");
-    expect(formatCurrency(0.19, "USD", "en", false, {dp: 5})).toEqual("$0.20000");
+    expect(formatCurrency(0.19, "BTC", "en", false, {dp: 5})).toEqual("₿0.19000");
   });
 
   it("formats significant figures correctly", () => {
-    expect(formatCurrency(123.456, "USD", "en", false, {sf: 1})).toEqual("$123.5");
-    expect(formatCurrency(0.99999, "USD", "en", false, {sf: 2})).toEqual("$2.0");
+    // Round off to max n significant figures
+    expect(formatCurrency(12311.456, "USD", "en", false, {sf: 1})).toEqual("$10,000");
+    expect(formatCurrency(0.99999, "USD", "en", false, {sf: 2})).toEqual("$1");
     expect(formatCurrency(1000.12345, "USD", "en", false, {sf: 5})).toEqual("$1,000.1");
   });
   
   it("formats decimal places and significant figures correctly", () => {
-    // Round off to n significant figures, with max 2 decimal places
+    // Round off to max n significant figures, with max 2 decimal places
     expect(formatCurrency(123.456, "USD", "en", false, {dp: 2, sf: 3})).toEqual("$123");
     expect(formatCurrency(12.345678, "USD", "en", false, {dp: 2, sf: 4})).toEqual("$12.35");
-    expect(formatCurrency(1005.15, "USD", "en", false, {dp: 2, sf: 5})).toEqual("$1005.2");
-    // Round off to 6 significant figures, with max 8 decimal places
-    expect(formatCurrency(0.000000015, "USD", "en", false, {dp: 8, sf: 6})).toEqual("$0.00000002");
-    expect(formatCurrency(123.45, "USD", "en", false, {dp: 8, sf: 6})).toEqual("$123.50");
-    expect(formatCurrency(12.345678, "USD", "en", false, {dp: 8, sf: 6})).toEqual("$12.3457");
+    expect(formatCurrency(1005.15, "USD", "en", false, {dp: 2, sf: 5})).toEqual("$1,005.2");
+    // Handle edge case, should only round once
+    expect(formatCurrency(1.94999, "USD", "en", false, {dp: 2, sf: 4})).toEqual("$1.95");
+
+    // Round off to max 6 significant figures, with max n decimal places
+    expect(formatCurrency(0.00016, "USD", "en", false, {dp: 4, sf: 6})).toEqual("$0.0002");
+    expect(formatCurrency(1234.56789, "USD", "en", false, {dp: 3, sf: 6})).toEqual("$1,234.57");
+    expect(formatCurrency(0.000000012345, "BTC", "en", false, {dp: 8, sf: 6})).toEqual("₿0.00000001");
   });
+
+  it("raw = true", () => {
+    // Round off to specified significant figure only
+    expect(formatCurrency(123.456, "USD", "en", true, {sf: 5})).toEqual("123.46");
+    
+    // Show up to specified fraction digits only
+    expect(formatCurrency(123.456, "USD", "en", true, {dp: 0})).toEqual("123");
+    
+    // Round off to max n significant figures, with max n decimal places
+    expect(formatCurrency(123.456, "USD", "en", true, {dp: 8, sf: 5})).toEqual("123.46");
+    expect(formatCurrency(123456.78, "USD", "en", true, {dp: 1, sf: 10})).toEqual("123456.8");
+    // Handle edge case, should only round once
+    expect(formatCurrency(1.94999, "USD", "en", true, {dp: 2, sf: 2})).toEqual("1.9");
+  })  
 });
