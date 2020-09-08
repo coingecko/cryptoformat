@@ -22,5 +22,10 @@ export function formatCurrency(
   isoCode: string,
   locale: string,
   raw: boolean,
-  noDecimal: boolean
+  noDecimal: boolean | noDecimalObject
 ): number;
+
+interface noDecimalObject{
+  dp?: number, // number of decimal places
+  sf?: number // number of significant figures
+}

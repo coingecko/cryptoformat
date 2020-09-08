@@ -41,7 +41,7 @@ const supportedCurrencySymbols = {
   TRY: "₺",
   XAU: "XAU",
   XAG: "XAG",
-  XDR: "XDR"
+  XDR: "XDR",
 };
 
 // A map of override objects to apply.
@@ -52,7 +52,7 @@ const symbolOverrides = {
   SGD: { location: { start: true }, forLocales: { en: true } },
   PHP: { location: { start: true }, forLocales: { en: true } },
   BTC: { location: { start: true }, forLocales: { en: true } },
-  ETH: { location: { start: true }, forLocales: { en: true } }
+  ETH: { location: { start: true }, forLocales: { en: true } },
 };
 
 // Feature detection for Intl.NumberFormat
@@ -118,27 +118,24 @@ function formatCurrencyOverride(formattedCurrency, locale = "en") {
 
 // Generates a formatter from Intl.NumberFormat
 function generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig) {
-  let formatter;
   try {
     const params = {
       style: "currency",
       currency: isoCode,
-      currencyDisplay: "symbol"
-    }
-    if(numDecimals !== undefined) {
+      currencyDisplay: "symbol",
+    };
+    if (numDecimals !== undefined) {
       params.minimumFractionDigits = numDecimals;
       params.maximumFractionDigits = numDecimals;
-    } 
-    else if(numSigFig !== undefined) {
+    } else if (numSigFig !== undefined) {
       params.maximumSignificantDigits = numSigFig;
     }
-    formatter = new Intl.NumberFormat(locale, params);
+    return new Intl.NumberFormat(locale, params);
   } catch (e) {
     // Unsupported currency, etc.
     // Use primitive fallback
     return generateFallbackFormatter(isoCode, locale, numDecimals);
   }
-  return formatter;
 }
 
 // Generates a primitive fallback formatter with no symbol support.
@@ -147,24 +144,24 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
 
   if (numDecimals > 2) {
     return {
-      format: value => {
+      format: (value) => {
         return isCrypto(isoCode)
           ? `${value.toFixed(numDecimals)} ${isoCode}`
           : `${isoCode} ${value.toFixed(numDecimals)}`;
-      }
+      },
     };
   } else {
     return {
-      format: value => {
+      format: (value) => {
         return isCrypto(isoCode)
           ? `${value.toLocaleString(locale)} ${isoCode}`
           : `${isoCode} ${value.toLocaleString(locale)}`;
-      }
+      },
     };
   }
 }
 
-function generateFormatter(isoCode, locale, numDecimals , numSigFig) {
+function generateFormatter(isoCode, locale, numDecimals, numSigFig) {
   const isNumberFormatSupported = IntlNumberFormatSupported();
 
   const useIntlNumberFormatter =
@@ -238,7 +235,13 @@ const MEDIUM_CRYPTO_THRESHOLD = 50;
 // Large crypto amount threshold
 const LARGE_CRYPTO_THRESHOLD = 1000;
 
-export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDecimal = false) {
+export function formatCurrency(
+  amount,
+  isoCode,
+  locale = "en",
+  raw = false,
+  noDecimal = false
+) {
   isoCode = isoCode.toUpperCase();
 
   if (currentISOCode !== isoCode || currentLocale != locale) {
@@ -254,28 +257,45 @@ export function formatCurrency(amount, isoCode, locale = "en", raw = false, noDe
       currencyFormatterNoDecimal.format(amount),
       locale
     );
-  } else if(typeof noDecimal === 'object' && noDecimal !== null) {
+  } else if (typeof noDecimal === "object" && noDecimal !== null) {
     if (raw) {
       // Limit to max n decimal places if applicable
-      let raw_amount = noDecimal.hasOwnProperty('dp') ? amount.toFixed(noDecimal.dp) : amount;
+      let raw_amount = noDecimal.hasOwnProperty("dp")
+        ? amount.toFixed(noDecimal.dp)
+        : amount;
       // Round off to number of significant figures without trailing 0's
       return `${parseFloat(raw_amount).toPrecision(noDecimal.sf) / 1}`;
-    } else if (noDecimal.hasOwnProperty('dp') && noDecimal.hasOwnProperty('sf')){
+    } else if (
+      noDecimal.hasOwnProperty("dp") &&
+      noDecimal.hasOwnProperty("sf")
+    ) {
       // Show specified number of significant digits with cutoff of specified fraction digits
-      const currencyFormatterCustom = generateFormatter(isoCode, locale, undefined, noDecimal.sf)
-      
+      const currencyFormatterCustom = generateFormatter(
+        isoCode,
+        locale,
+        undefined,
+        noDecimal.sf
+      );
+
       return formatCurrencyOverride(
-        currencyFormatterCustom.format(Number.parseFloat(amount.toFixed(noDecimal.dp))),
+        currencyFormatterCustom.format(
+          Number.parseFloat(amount.toFixed(noDecimal.dp))
+        ),
         locale
       );
     } else {
-      const currencyFormatterCustom = generateFormatter(isoCode, locale, noDecimal.dp, noDecimal.sf)
-      
+      const currencyFormatterCustom = generateFormatter(
+        isoCode,
+        locale,
+        noDecimal.dp,
+        noDecimal.sf
+      );
+
       return formatCurrencyOverride(
         currencyFormatterCustom.format(amount),
         locale
       );
-    } 
+    }
   }
 
   if (isCrypto(isoCode)) {
