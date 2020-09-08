@@ -203,3 +203,32 @@ describe("Format Currency correctly", () => {
     expect(formatCurrency(32.034, "JPY", "en")).toEqual("¥32.03");
   });
 });
+
+describe("Accepts object parameter", () => {
+  beforeAll(() => {
+    clearCache();
+  });
+
+  it("formats decimal places correctly", () => {
+    expect(formatCurrency(123.456, "USD", "en", false, {dp: 1})).toEqual("$123.5");
+    expect(formatCurrency(1000.12345, "USD", "en", false, {dp: 3})).toEqual("$1,000.123");
+    expect(formatCurrency(0.19, "USD", "en", false, {dp: 5})).toEqual("$0.20000");
+  });
+
+  it("formats significant figures correctly", () => {
+    expect(formatCurrency(123.456, "USD", "en", false, {sf: 1})).toEqual("$123.5");
+    expect(formatCurrency(0.99999, "USD", "en", false, {sf: 2})).toEqual("$2.0");
+    expect(formatCurrency(1000.12345, "USD", "en", false, {sf: 5})).toEqual("$1,000.1");
+  });
+  
+  it("formats decimal places and significant figures correctly", () => {
+    // Round off to n significant figures, with max 2 decimal places
+    expect(formatCurrency(123.456, "USD", "en", false, {dp: 2, sf: 3})).toEqual("$123");
+    expect(formatCurrency(12.345678, "USD", "en", false, {dp: 2, sf: 4})).toEqual("$12.35");
+    expect(formatCurrency(1005.15, "USD", "en", false, {dp: 2, sf: 5})).toEqual("$1005.2");
+    // Round off to 6 significant figures, with max 8 decimal places
+    expect(formatCurrency(0.000000015, "USD", "en", false, {dp: 8, sf: 6})).toEqual("$0.00000002");
+    expect(formatCurrency(123.45, "USD", "en", false, {dp: 8, sf: 6})).toEqual("$123.50");
+    expect(formatCurrency(12.345678, "USD", "en", false, {dp: 8, sf: 6})).toEqual("$12.3457");
+  });
+});
