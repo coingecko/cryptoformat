@@ -93,8 +93,20 @@ describe("is fiat", () => {
       expect(formatCurrency(1001, "USD", "en")).toBe("$1,001.00");
 
       // Large fiat, no decimals
-      expect(formatCurrency(51100, "USD", "en")).toBe("$51,100");
+      expect(formatCurrency(51100, "USD", "en")).toBe("$51,100.00");
     });
+  });
+
+  describe("no decimal threshold", () => {
+    test("returns decimal for amounts <= 100,000", () => {
+      expect(formatCurrency(4000.23, "USD", "en")).toBe("$4,000.23");
+      expect(formatCurrency(100000, "USD", "en")).toBe("$100,000.00");
+    });
+
+    test("returns no decimal for amounts > 100,000", () => {
+      expect(formatCurrency(250000.9, "USD", "en")).toBe("$250,001");
+      expect(formatCurrency(100000.001, "USD", "en")).toBe("$100,000");
+    })
   });
 
   describe("noDecimal = true", () => {
