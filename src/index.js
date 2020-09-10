@@ -234,6 +234,8 @@ function initializeFormatters(isoCode, locale) {
 const MEDIUM_CRYPTO_THRESHOLD = 50;
 // Large crypto amount threshold
 const LARGE_CRYPTO_THRESHOLD = 1000;
+// No decimal threshold for large amounts
+const NO_DECIMAL_THRESHOLD = 100000;
 
 export function formatCurrency(
   amount,
@@ -373,7 +375,7 @@ export function formatCurrency(
         currencyFormatterTwoDecimal.format(amount),
         locale
       );
-    } else if (unsigned_amount > 20000) {
+    } else if (unsigned_amount > NO_DECIMAL_THRESHOLD) {
       return formatCurrencyOverride(
         currencyFormatterNoDecimal.format(amount),
         locale
