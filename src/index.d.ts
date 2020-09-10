@@ -25,7 +25,7 @@ export function formatCurrency(
   noDecimal: boolean | decimalConfig
 ): string;
 
-interface decimalConfig{
+interface decimalConfig {
   decimalPlaces?: number, 
   significantFigures?: number 
 }

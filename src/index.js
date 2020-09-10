@@ -72,7 +72,7 @@ export function isCrypto(isoCode) {
   return isBTCETH(isoCode) || supportedCurrencySymbols[isoCode] == null;
 }
 
-// Function to transignificantFiguresorm the output from Intl.NumberFormat#format
+// Function to transform the output from Intl.NumberFormat#format
 function formatCurrencyOverride(formattedCurrency, locale = "en") {
   // If currency code remains in front
   const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}\s?/);
