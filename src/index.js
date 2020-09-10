@@ -260,26 +260,26 @@ export function formatCurrency(
   } else if (typeof noDecimal === "object" && noDecimal !== null) {
     if (raw) {
       // Limit to max n decimal places if applicable
-      let raw_amount = noDecimal.hasOwnProperty("dp")
-        ? amount.toFixed(noDecimal.dp)
+      let raw_amount = noDecimal.hasOwnProperty("decimalPlaces")
+        ? amount.toFixed(noDecimal.decimalPlaces)
         : amount;
       // Round off to number of significant figures without trailing 0's
-      return `${parseFloat(raw_amount).toPrecision(noDecimal.sf) / 1}`;
+      return `${parseFloat(raw_amount).toPrecision(noDecimal.significantFigures) / 1}`;
     } else if (
-      noDecimal.hasOwnProperty("dp") &&
-      noDecimal.hasOwnProperty("sf")
+      noDecimal.hasOwnProperty("decimalPlaces") &&
+      noDecimal.hasOwnProperty("significantFigures")
     ) {
       // Show specified number of significant digits with cutoff of specified fraction digits
       const currencyFormatterCustom = generateFormatter(
         isoCode,
         locale,
         undefined,
-        noDecimal.sf
+        noDecimal.significantFigures
       );
 
       return formatCurrencyOverride(
         currencyFormatterCustom.format(
-          Number.parseFloat(amount.toFixed(noDecimal.dp))
+          Number.parseFloat(amount.toFixed(noDecimal.decimalPlaces))
         ),
         locale
       );
@@ -287,8 +287,8 @@ export function formatCurrency(
       const currencyFormatterCustom = generateFormatter(
         isoCode,
         locale,
-        noDecimal.dp,
-        noDecimal.sf
+        noDecimal.decimalPlaces,
+        noDecimal.significantFigures
       );
 
       return formatCurrencyOverride(
