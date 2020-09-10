@@ -41,6 +41,17 @@ formatCurrency(123400, "EUR", "de");
 formatCurrency(4000.23, "USD", "en", false, true);
 // "$4,000"
 
+// Provide number of decimal places or significant figures
+formatCurrency(1.234, "USD", "en", false, { decimalPlaces: 2 });
+// "$1.23"
+
+formatCurrency(1234, "USD", "en", false, { significantFigures: 2 });
+// "$1,200"
+
+// Provide number of significant figures only up to specified number of decimal places 
+formatCurrency(0.1234, "USD", "en", false, { decimalPlaces: 2, significantFigures: 3 });
+// "$0.12"
+
 ```
 
 `cryptoformat` tries to cache formatters for reuse internally. If same locale and currency is used, the cached formatter will be used.
