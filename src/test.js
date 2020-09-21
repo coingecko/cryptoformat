@@ -43,9 +43,9 @@ describe("is crypto", () => {
   describe("noDecimal = true", () => {
     test("returns without decimal", () => {
       expect(formatCurrency(1001.4543, "BTC", "en", false, true)).toBe("₿1,001");
-      expect(formatCurrency(51.12342, "BTC", "en", false, true)).toBe("₿51");
-      expect(formatCurrency(11.1432, "BTC", "en", false, true)).toBe("₿11");
-      expect(formatCurrency(9.234, "ETH", "en", false, true)).toBe("Ξ9");
+      expect(formatCurrency(51.12342, "BTC", "en", false, true)).toBe("₿51.123");
+      expect(formatCurrency(11.1432, "BTC", "en", false, true)).toBe("₿11.143200");
+      expect(formatCurrency(9.234, "ETH", "en", false, true)).toBe("Ξ9.234000");
     });
 
     test("returns decimal when less than 1", () => {
