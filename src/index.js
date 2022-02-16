@@ -181,6 +181,7 @@ let currencyFormatterTwoDecimal;
 let currencyFormatterSmall;
 let currencyFormatterVerySmall;
 let currencyFormatterVeryVerySmall;
+let currencyFormatter18DP;
 
 // If a page has to display multiple currencies, formatters would have to be created for each of them
 // To save some effort, we save formatters for reuse
@@ -215,6 +216,9 @@ function initializeFormatters(isoCode, locale) {
   currencyFormatterVeryVerySmall = cachedFormatter
     ? cachedFormatter.currencyFormatterVeryVerySmall
     : generateFormatter(isoCode, locale, 12);
+  currencyFormatter18DP = cachedFormatter
+    ? cachedFormatter.currencyFormatter18DP
+    : generateFormatter(isoCode, locale, 18);
 
   // Save in cache
   if (cachedFormatter == null) {
@@ -226,6 +230,7 @@ function initializeFormatters(isoCode, locale) {
     formattersCache[cacheKey].currencyFormatterSmall = currencyFormatterSmall;
     formattersCache[cacheKey].currencyFormatterVerySmall = currencyFormatterVerySmall;
     formattersCache[cacheKey].currencyFormatterVeryVerySmall = currencyFormatterVeryVerySmall;
+    formattersCache[cacheKey].currencyFormatter18DP = currencyFormatter18DP;
   }
 }
 
@@ -341,17 +346,25 @@ export function formatCurrency(
         currencyFormatterVerySmall.format(amount),
         locale
       );
-    } else {
+    } else if (price >= 0.000000001 && price < 0.000001) {
       // Crypto amount < 0.000001, show 12 fraction digits
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
+        locale
+      );
+    } else if (price < 0.000000001) {
+      // Crypto amount < 0.000000001, show 18 fraction digits
+      return formatCurrencyOverride(
+        currencyFormatter18DP.format(amount),
         locale
       );
     }
   } else {
     const unsigned_amount = Math.abs(amount);
     if (raw) {
-      if (unsigned_amount < 0.00001) {
+      if (unsigned_amount < 0.00000001) {
+        return amount.toFixed(18);
+      } else if (unsigned_amount < 0.00001) {
         return amount.toFixed(12);
       } else if (unsigned_amount < 0.001) {
         return amount.toFixed(8);
@@ -365,6 +378,11 @@ export function formatCurrency(
     if (unsigned_amount === 0.0) {
       return formatCurrencyOverride(
         currencyFormatterNormal.format(amount),
+        locale
+      );
+    } else if (unsigned_amount < 0.000000001) {
+      return formatCurrencyOverride(
+        currencyFormatter18DP.format(amount),
         locale
       );
     } else if (unsigned_amount < 0.000001) {
