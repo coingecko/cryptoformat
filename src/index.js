@@ -346,13 +346,13 @@ export function formatCurrency(
         currencyFormatterVerySmall.format(amount),
         locale
       );
-    } else if (price >= 0.000000001 && price < 0.000001) {
+    } else if (price >= 0.0000000001 && price < 0.000001) {
       // Crypto amount < 0.000001, show 12 fraction digits
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
         locale
       );
-    } else if (price < 0.000000001) {
+    } else if (price < 0.0000000001) {
       // Crypto amount < 0.000000001, show 18 fraction digits
       return formatCurrencyOverride(
         currencyFormatter18DP.format(amount),
@@ -362,7 +362,7 @@ export function formatCurrency(
   } else {
     const unsigned_amount = Math.abs(amount);
     if (raw) {
-      if (unsigned_amount < 0.00000001) {
+      if (unsigned_amount < 0.0000000001) {
         return amount.toFixed(18);
       } else if (unsigned_amount < 0.00001) {
         return amount.toFixed(12);
@@ -380,7 +380,7 @@ export function formatCurrency(
         currencyFormatterNormal.format(amount),
         locale
       );
-    } else if (unsigned_amount < 0.000000001) {
+    } else if (unsigned_amount < 0.0000000001) {
       return formatCurrencyOverride(
         currencyFormatter18DP.format(amount),
         locale

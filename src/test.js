@@ -86,8 +86,8 @@ describe("is fiat", () => {
       // Very small fiat, 8 decimals
       expect(formatCurrency(0.00002, "USD", "en")).toBe("$0.00002000");
 
-      // Negative Fiat, 18 decimals, if less than 0.000000001
-      expect(formatCurrency(-0.0000000004, "USD", "en")).toBe("-$0.000000000400000000");
+      // Negative Fiat, 18 decimals, if less than 0.0000000001
+      expect(formatCurrency(-0.00000000004, "USD", "en")).toBe("-$0.000000000040000000");
 
       // Negative Fiat, 12 decimals, if less than 0.000001
       expect(formatCurrency(-0.0000004, "USD", "en")).toBe("-$0.000000400000");
@@ -181,7 +181,7 @@ describe("Intl.NumberFormat not supported", () => {
         expect(formatCurrency(0.0000005, "BTC", "en")).toBe("0.000000500000 BTC");
 
         // < 0.000000001 crypto, 18 decimals
-        expect(formatCurrency(0.0000000005, "BTC", "en")).toBe("0.000000000500000000 BTC");
+        expect(formatCurrency(0.00000000005, "BTC", "en")).toBe("0.000000000050000000 BTC");
 
         // Non-BTC or ETH
         expect(formatCurrency(1.1, "DOGE", "en")).toBe("1.100000 DOGE");
@@ -194,7 +194,7 @@ describe("Intl.NumberFormat not supported", () => {
     describe("raw = true", () => {
       test("returns formatted raw", () => {
         // < 0.00000001 fiat, 18 decimals
-        expect(formatCurrency(0.0000000001, "USD", "en", true)).toBe("0.000000000100000000");
+        expect(formatCurrency(0.00000000001, "USD", "en", true)).toBe("0.000000000010000000");
 
         // VeryVery small fiat, 12 decimals
         expect(formatCurrency(0.0000001, "USD", "en", true)).toBe("0.000000100000");
@@ -216,7 +216,7 @@ describe("Intl.NumberFormat not supported", () => {
         expect(formatCurrency(0.0, "USD", "en")).toBe("USD 0");
 
         // < 0.000000001 fiat, 18 decimals
-        expect(formatCurrency(0.0000000001, "USD", "en")).toBe("USD 0.000000000100000000");
+        expect(formatCurrency(0.00000000001, "USD", "en")).toBe("USD 0.000000000010000000");
 
         // Very small fiat, 12 decimals
         expect(formatCurrency(0.0000002, "USD", "en")).toBe("USD 0.000000200000");
