@@ -181,6 +181,8 @@ let currencyFormatterTwoDecimal;
 let currencyFormatterSmall;
 let currencyFormatterVerySmall;
 let currencyFormatterVeryVerySmall;
+let currencyFormatter15DP;
+let currencyFormatter18DP;
 
 // If a page has to display multiple currencies, formatters would have to be created for each of them
 // To save some effort, we save formatters for reuse
@@ -215,6 +217,12 @@ function initializeFormatters(isoCode, locale) {
   currencyFormatterVeryVerySmall = cachedFormatter
     ? cachedFormatter.currencyFormatterVeryVerySmall
     : generateFormatter(isoCode, locale, 12);
+  currencyFormatter15DP = cachedFormatter
+    ? cachedFormatter.currencyFormatter15DP
+    : generateFormatter(isoCode, locale, 15);
+  currencyFormatter18DP = cachedFormatter
+    ? cachedFormatter.currencyFormatter18DP
+    : generateFormatter(isoCode, locale, 18);
 
   // Save in cache
   if (cachedFormatter == null) {
@@ -226,6 +234,8 @@ function initializeFormatters(isoCode, locale) {
     formattersCache[cacheKey].currencyFormatterSmall = currencyFormatterSmall;
     formattersCache[cacheKey].currencyFormatterVerySmall = currencyFormatterVerySmall;
     formattersCache[cacheKey].currencyFormatterVeryVerySmall = currencyFormatterVeryVerySmall;
+    formattersCache[cacheKey].currencyFormatter15DP = currencyFormatter15DP;
+    formattersCache[cacheKey].currencyFormatter18DP = currencyFormatter18DP;
   }
 }
 
@@ -341,19 +351,32 @@ export function formatCurrency(
         currencyFormatterVerySmall.format(amount),
         locale
       );
-    } else {
-      // Crypto amount < 0.000001, show 12 fraction digits
+    } else if (price >= 10**-9 && price < 10**-6) {
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
+        locale
+      );
+    } else if (price >= 10**-12 && price < 10**-9) {
+      return formatCurrencyOverride(
+        currencyFormatter15DP.format(amount),
+        locale
+      );
+    } else if (price < 10**-12) {
+      return formatCurrencyOverride(
+        currencyFormatter18DP.format(amount),
         locale
       );
     }
   } else {
     const unsigned_amount = Math.abs(amount);
     if (raw) {
-      if (unsigned_amount < 0.00001) {
+      if (unsigned_amount < 10**-12) {
+        return amount.toFixed(18);
+      } else if (unsigned_amount < 10**-9) {
+        return amount.toFixed(15);
+      } else if (unsigned_amount < 10**-6) {
         return amount.toFixed(12);
-      } else if (unsigned_amount < 0.001) {
+      } else if (unsigned_amount < 10**-3) {
         return amount.toFixed(8);
       } else if (unsigned_amount < 1.0) {
         return amount.toFixed(6);
@@ -367,7 +390,17 @@ export function formatCurrency(
         currencyFormatterNormal.format(amount),
         locale
       );
-    } else if (unsigned_amount < 0.000001) {
+    } else if (unsigned_amount < 10**-12) {
+      return formatCurrencyOverride(
+        currencyFormatter18DP.format(amount),
+        locale
+      );
+    } else if (unsigned_amount < 10**-9) {
+      return formatCurrencyOverride(
+        currencyFormatter15DP.format(amount),
+        locale
+      );
+    } else if (unsigned_amount < 10**-6) {
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
         locale

@@ -37,6 +37,12 @@ describe("is crypto", () => {
       // VeryVery small crypto, 12 decimals
       expect(formatCurrency(0.0000005, "BTC", "en")).toBe("₿0.000000500000");
 
+      // < 10**-9, 15 decimals
+      expect(formatCurrency(10**-10, "BTC", "en")).toBe("₿0.000000000100000");
+
+      // < 10**-12, 18 decimals
+      expect(formatCurrency(10**-13, "BTC", "en")).toBe("₿0.000000000000100000");
+
       // Non-BTC or ETH
       expect(formatCurrency(1.1, "DOGE", "en")).toBe("1.100000 DOGE");
       expect(formatCurrency(1.1, "LTC", "en")).toBe("1.100000 LTC");
@@ -82,6 +88,12 @@ describe("is fiat", () => {
 
       // Very small fiat, 8 decimals
       expect(formatCurrency(0.00002, "USD", "en")).toBe("$0.00002000");
+
+      // Negative Fiat, 18 decimals, if less than 0.0000000000001
+      expect(formatCurrency(-0.00000000000004, "USD", "en")).toBe("-$0.000000000000040000");
+
+      // Negative Fiat, 15 decimals, if less than 0.0000000001
+      expect(formatCurrency(-0.00000000004, "USD", "en")).toBe("-$0.000000000040000");
 
       // Negative Fiat, 12 decimals, if less than 0.000001
       expect(formatCurrency(-0.0000004, "USD", "en")).toBe("-$0.000000400000");
@@ -174,6 +186,12 @@ describe("Intl.NumberFormat not supported", () => {
         // VeryVery small cyrpto, 12 decimals
         expect(formatCurrency(0.0000005, "BTC", "en")).toBe("0.000000500000 BTC");
 
+        // < 0.000000001 crypto, 15 decimals
+        expect(formatCurrency(0.00000000005, "BTC", "en")).toBe("0.000000000050000 BTC");
+
+        // < 0.000000000001 crypto, 18 decimals
+        expect(formatCurrency(0.00000000000005, "BTC", "en")).toBe("0.000000000000050000 BTC");
+
         // Non-BTC or ETH
         expect(formatCurrency(1.1, "DOGE", "en")).toBe("1.100000 DOGE");
         expect(formatCurrency(1.1, "LTC", "en")).toBe("1.100000 LTC");
@@ -184,6 +202,12 @@ describe("Intl.NumberFormat not supported", () => {
   describe("is fiat", () => {
     describe("raw = true", () => {
       test("returns formatted raw", () => {
+        // < 0.00000001 fiat, 18 decimals
+        expect(formatCurrency(0.00000000000001, "USD", "en", true)).toBe("0.000000000000010000");
+
+        // < 0.00000001 fiat, 15 decimals
+        expect(formatCurrency(0.00000000001, "USD", "en", true)).toBe("0.000000000010000");
+
         // VeryVery small fiat, 12 decimals
         expect(formatCurrency(0.0000001, "USD", "en", true)).toBe("0.000000100000");
 
@@ -202,6 +226,12 @@ describe("Intl.NumberFormat not supported", () => {
       test("returns formatted with symbol", () => {
         // 0 fiat, no decimals
         expect(formatCurrency(0.0, "USD", "en")).toBe("USD 0");
+
+        // < 0.000000001 fiat, 15 decimals
+        expect(formatCurrency(0.00000000000001, "USD", "en")).toBe("USD 0.000000000000010000");
+
+        // < 0.000000001 fiat, 15 decimals
+        expect(formatCurrency(0.00000000001, "USD", "en")).toBe("USD 0.000000000010000");
 
         // Very small fiat, 12 decimals
         expect(formatCurrency(0.0000002, "USD", "en")).toBe("USD 0.000000200000");
