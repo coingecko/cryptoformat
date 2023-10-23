@@ -62,6 +62,26 @@ describe("is crypto", () => {
       expect(formatCurrency(0.5, "BTC", "en", false, true)).toBe("₿0.50000000");
     })
   });
+
+  describe("abbreviated = true", () => {
+    test("returns abbreviated format (EN)", () => {
+      expect(formatCurrency(12311111, "BTC", "en", false, false, true)).toBe("₿12.31M");
+      expect(formatCurrency(1000000000, "BTC", "en", false, false, true)).toBe("₿1B");
+      expect(formatCurrency(10000000, "ETH", "en", false, false, true)).toBe("Ξ10M");
+      expect(formatCurrency(100000000, "ETH", "en", false, false, true)).toBe("Ξ100M");
+      expect(formatCurrency(10000000, "DOGE", "en", false, false, true)).toBe("10M DOGE");
+      expect(formatCurrency(100000000, "DOGE", "en", false, false, true)).toBe("100M DOGE");
+    });
+
+    test("returns abbreviated format (JA)", () => {
+      expect(formatCurrency(12311111, "BTC", "ja", false, false, true)).toBe("BTC 1231.11万");
+      expect(formatCurrency(1000000000, "BTC", "ja", false, false, true)).toBe("BTC 10億");
+      expect(formatCurrency(10000000, "ETH", "ja", false, false, true)).toBe("ETH 1000万");
+      expect(formatCurrency(100000000, "ETH", "ja", false, false, true)).toBe("ETH 1億");
+      expect(formatCurrency(10000000, "DOGE", "ja", false, false, true)).toBe("1000万 DOGE");
+      expect(formatCurrency(100000000, "DOGE", "ja", false, false, true)).toBe("1億 DOGE");
+    });
+  });
 });
 
 describe("is fiat", () => {
@@ -142,6 +162,26 @@ describe("is fiat", () => {
       expect(formatCurrency(0.5, "USD", "en", false, true)).toBe("$0.500000");
       expect(formatCurrency(0.00002, "USD", "en", false, true)).toBe("$0.00002000");
     })
+  });
+
+  describe("abbreviated = true", () => {
+    test("returns abbreviated format (EN)", () => {
+      expect(formatCurrency(10200000, "USD", "en", false, false, true)).toBe("$10.2M");
+      expect(formatCurrency(12100000000, "USD", "en", false, false, true)).toBe("$12.1B");
+      expect(formatCurrency(10000000, "AUD", "en", false, false, true)).toBe("A$10M");
+      expect(formatCurrency(100000000, "AUD", "en", false, false, true)).toBe("A$100M");
+      expect(formatCurrency(10000000, "JPY", "en", false, false, true)).toBe("¥10M");
+      expect(formatCurrency(100000000, "JPY", "en", false, false, true)).toBe("¥100M");
+    });
+
+    test("returns abbreviated format (JA)", () => {
+      expect(formatCurrency(12000000, "USD", "ja", false, false, true)).toBe("$1200万");
+      expect(formatCurrency(1210000000, "USD", "ja", false, false, true)).toBe("$12.1億");
+      expect(formatCurrency(10000000, "AUD", "ja", false, false, true)).toBe("A$1000万");
+      expect(formatCurrency(100000000, "AUD", "ja", false, false, true)).toBe("A$1億");
+      expect(formatCurrency(10000000, "JPY", "ja", false, false, true)).toBe("￥1000万");
+      expect(formatCurrency(100000000, "JPY", "ja", false, false, true)).toBe("￥1億");
+    });
   });
 });
 
