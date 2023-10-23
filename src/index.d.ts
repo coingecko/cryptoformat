@@ -24,6 +24,14 @@ export function formatCurrency(
   raw: boolean,
   noDecimal: boolean | decimalConfig
 ): string;
+export function formatCurrency(
+  amount: number,
+  isoCode: string,
+  locale: string,
+  raw: boolean,
+  noDecimal: boolean | decimalConfig,
+  abbreviated: boolean,
+): string;
 
 interface decimalConfig {
   decimalPlaces?: number, 
