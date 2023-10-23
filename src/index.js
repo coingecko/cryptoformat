@@ -161,6 +161,23 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
   }
 }
 
+function generateAbbreviatedFormatter(isoCode, locale) {
+  // Show regular numbers if no Intl.NumberFormat support.
+  if (!IntlNumberFormatSupported()) {
+    return generateFallbackFormatter(isoCode, locale, 0);
+  }
+
+  let numberFormatOptions = { style: "decimal", notation: "compact", minimumFractionDigits: 0, maximumFractionDigits: 2 };
+
+  // Currency symbol is supported if currency is Fiat/BTC/ETH.
+  if (!isCrypto(isoCode) || isBTCETH(isoCode)) {
+    numberFormatOptions.style = "currency";
+    numberFormatOptions.currency = isoCode;
+  }
+
+  return new Intl.NumberFormat(locale, numberFormatOptions);
+}
+
 function generateFormatter(isoCode, locale, numDecimals, numSigFig) {
   const isNumberFormatSupported = IntlNumberFormatSupported();
 
@@ -183,6 +200,7 @@ let currencyFormatterVerySmall;
 let currencyFormatterVeryVerySmall;
 let currencyFormatter15DP;
 let currencyFormatter18DP;
+let currencyFormatterAbbreviated;
 
 // If a page has to display multiple currencies, formatters would have to be created for each of them
 // To save some effort, we save formatters for reuse
@@ -223,6 +241,9 @@ function initializeFormatters(isoCode, locale) {
   currencyFormatter18DP = cachedFormatter
     ? cachedFormatter.currencyFormatter18DP
     : generateFormatter(isoCode, locale, 18);
+  currencyFormatterAbbreviated = cachedFormatter
+    ? cachedFormatter.currencyFormatterAbbreviated
+    : generateAbbreviatedFormatter(isoCode, locale);
 
   // Save in cache
   if (cachedFormatter == null) {
@@ -236,6 +257,7 @@ function initializeFormatters(isoCode, locale) {
     formattersCache[cacheKey].currencyFormatterVeryVerySmall = currencyFormatterVeryVerySmall;
     formattersCache[cacheKey].currencyFormatter15DP = currencyFormatter15DP;
     formattersCache[cacheKey].currencyFormatter18DP = currencyFormatter18DP;
+    formattersCache[cacheKey].currencyFormatterAbbreviated = currencyFormatterAbbreviated;
   }
 }
 
@@ -251,7 +273,8 @@ export function formatCurrency(
   isoCode,
   locale = "en",
   raw = false,
-  noDecimal = false
+  noDecimal = false,
+  abbreviated = false,
 ) {
   isoCode = isoCode.toUpperCase();
 
@@ -261,6 +284,17 @@ export function formatCurrency(
 
     // Formatters are tied to currency code, we try to initialize as infrequently as possible.
     initializeFormatters(isoCode, locale);
+  }
+
+  if (abbreviated) {
+    let formattedAbbreviatedCurrency = currencyFormatterAbbreviated.format(amount);
+
+    // Manually add currency code to the back for non-BTC/ETH crypto currencies.
+    if (isCrypto(isoCode) && !isBTCETH(isoCode)) {
+      formattedAbbreviatedCurrency = `${formattedAbbreviatedCurrency} ${isoCode}`;
+    }
+
+    return formatCurrencyOverride(formattedAbbreviatedCurrency, locale);
   }
 
   if (noDecimal === true && amount > 100.0) {
