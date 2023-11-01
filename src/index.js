@@ -167,7 +167,7 @@ function generateAbbreviatedFormatter(isoCode, locale) {
     return generateFallbackFormatter(isoCode, locale, 0);
   }
 
-  let numberFormatOptions = { style: "decimal", notation: "compact", minimumFractionDigits: 0, maximumFractionDigits: 2 };
+  let numberFormatOptions = { style: "decimal", notation: "compact", minimumFractionDigits: 0, maximumFractionDigits: 3 };
 
   // Currency symbol is supported if currency is Fiat/BTC/ETH.
   if (!isCrypto(isoCode) || isBTCETH(isoCode)) {

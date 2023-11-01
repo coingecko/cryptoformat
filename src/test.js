@@ -65,7 +65,7 @@ describe("is crypto", () => {
 
   describe("abbreviated = true", () => {
     test("returns abbreviated format (EN)", () => {
-      expect(formatCurrency(12311111, "BTC", "en", false, false, true)).toBe("₿12.31M");
+      expect(formatCurrency(12311111, "BTC", "en", false, false, true)).toBe("₿12.311M");
       expect(formatCurrency(1000000000, "BTC", "en", false, false, true)).toBe("₿1B");
       expect(formatCurrency(10000000, "ETH", "en", false, false, true)).toBe("Ξ10M");
       expect(formatCurrency(100000000, "ETH", "en", false, false, true)).toBe("Ξ100M");
@@ -74,7 +74,7 @@ describe("is crypto", () => {
     });
 
     test("returns abbreviated format (JA)", () => {
-      expect(formatCurrency(12311111, "BTC", "ja", false, false, true)).toBe("BTC 1231.11万");
+      expect(formatCurrency(12311111, "BTC", "ja", false, false, true)).toBe("BTC 1231.111万");
       expect(formatCurrency(1000000000, "BTC", "ja", false, false, true)).toBe("BTC 10億");
       expect(formatCurrency(10000000, "ETH", "ja", false, false, true)).toBe("ETH 1000万");
       expect(formatCurrency(100000000, "ETH", "ja", false, false, true)).toBe("ETH 1億");
