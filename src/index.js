@@ -72,8 +72,22 @@ export function isCrypto(isoCode) {
   return isBTCETH(isoCode) || supportedCurrencySymbols[isoCode] == null;
 }
 
+// Function to transform decimal trailing zeroes to exponent
+function decimalTrailingZeroesToExponent(formattedCurrency, maximumDecimalTrailingZeroes) {
+  const decimalTrailingZeroesPattern = new RegExp(`\\.(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`);
+
+  return formattedCurrency.replace(
+      decimalTrailingZeroesPattern,
+      (match, decimalTrailingZeroes) => `.0<sub title=\"${formattedCurrency}\">${decimalTrailingZeroes.length}</sub>`,
+  )
+}
+
 // Function to transform the output from Intl.NumberFormat#format
-function formatCurrencyOverride(formattedCurrency, locale = "en") {
+function formatCurrencyOverride(formattedCurrency, locale = "en", maximumDecimalTrailingZeroes) {
+  if (typeof maximumDecimalTrailingZeroes !== "undefined") {
+    formattedCurrency = decimalTrailingZeroesToExponent(formattedCurrency, maximumDecimalTrailingZeroes)
+  }
+
   // If currency code remains in front
   const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}\s?/);
   if (currencyCodeFrontMatch != null) {
@@ -277,6 +291,7 @@ export function formatCurrency(
   abbreviated = false,
 ) {
   isoCode = isoCode.toUpperCase();
+  let maximumDecimalTrailingZeroes = undefined;
 
   if (currentISOCode !== isoCode || currentLocale != locale) {
     currentISOCode = isoCode;
@@ -310,10 +325,13 @@ export function formatCurrency(
         : amount;
       // Round off to number of significant figures without trailing 0's
       return `${parseFloat(raw_amount).toPrecision(noDecimal.significantFigures) / 1}`;
-    } else if (
-      noDecimal.hasOwnProperty("decimalPlaces") &&
-      noDecimal.hasOwnProperty("significantFigures")
-    ) {
+    }
+
+    if (noDecimal.hasOwnProperty("maximumDecimalTrailingZeroes")) {
+      maximumDecimalTrailingZeroes = noDecimal.maximumDecimalTrailingZeroes;
+    }
+
+    if (noDecimal.hasOwnProperty("decimalPlaces") && noDecimal.hasOwnProperty("significantFigures")) {
       // Show specified number of significant digits with cutoff of specified fraction digits
       const currencyFormatterCustom = generateFormatter(
         isoCode,
@@ -326,9 +344,10 @@ export function formatCurrency(
         currencyFormatterCustom.format(
           Number.parseFloat(amount.toFixed(noDecimal.decimalPlaces))
         ),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
-    } else {
+    } else if (noDecimal.hasOwnProperty("decimalPlaces") || noDecimal.hasOwnProperty("significantFigures")) {
       const currencyFormatterCustom = generateFormatter(
         isoCode,
         locale,
@@ -338,7 +357,8 @@ export function formatCurrency(
 
       return formatCurrencyOverride(
         currencyFormatterCustom.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     }
   }
@@ -356,7 +376,8 @@ export function formatCurrency(
     if (amount === 0.0) {
       return formatCurrencyOverride(
         currencyFormatterNormal.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= LARGE_CRYPTO_THRESHOLD) {
       // Large crypto amount, show no decimal value
@@ -371,34 +392,40 @@ export function formatCurrency(
       // Medium crypto amount, show 3 fraction digits
       return formatCurrencyOverride(
         currencyFormatterMedium.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 1.0 && price < MEDIUM_CRYPTO_THRESHOLD) {
       //  crypto amount, show 6 fraction digits
       return formatCurrencyOverride(
         currencyFormatterSmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 0.000001 && price < 1.0) {
       //  crypto amount, show 8 fraction digits
       return formatCurrencyOverride(
         currencyFormatterVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 10**-9 && price < 10**-6) {
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 10**-12 && price < 10**-9) {
       return formatCurrencyOverride(
         currencyFormatter15DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price < 10**-12) {
       return formatCurrencyOverride(
         currencyFormatter18DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     }
   } else {
@@ -422,37 +449,44 @@ export function formatCurrency(
     if (unsigned_amount === 0.0) {
       return formatCurrencyOverride(
         currencyFormatterNormal.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 10**-12) {
       return formatCurrencyOverride(
         currencyFormatter18DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 10**-9) {
       return formatCurrencyOverride(
         currencyFormatter15DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 10**-6) {
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 0.05) {
       return formatCurrencyOverride(
         currencyFormatterVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 1.0) {
       return formatCurrencyOverride(
         currencyFormatterSmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (isoCode === "JPY" && unsigned_amount < 100) {
       return formatCurrencyOverride(
         currencyFormatterTwoDecimal.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount > NO_DECIMAL_THRESHOLD) {
       return formatCurrencyOverride(
