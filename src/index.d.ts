@@ -34,6 +34,7 @@ export function formatCurrency(
 ): string;
 
 interface decimalConfig {
-  decimalPlaces?: number, 
-  significantFigures?: number 
+  decimalPlaces?: number,
+  significantFigures?: number,
+  maximumDecimalTrailingZeroes?: number
 }
