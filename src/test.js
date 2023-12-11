@@ -327,18 +327,30 @@ describe("Accepts object parameter", () => {
     expect(formatCurrency(1000.12345, "USD", "en", false, {significantFigures: 5})).toEqual("$1,000.1");
   });
 
-  it("formats decimal places and significant figures correctly", () => {
-    // Round off to max n significant figures, with max 2 decimal places
-    expect(formatCurrency(123.456, "USD", "en", false, {decimalPlaces: 2, significantFigures: 3})).toEqual("$123");
-    expect(formatCurrency(12.345678, "USD", "en", false, {decimalPlaces: 2, significantFigures: 4})).toEqual("$12.35");
-    expect(formatCurrency(1005.15, "USD", "en", false, {decimalPlaces: 2, significantFigures: 5})).toEqual("$1,005.2");
-    // Handle edge case, should only round once
-    expect(formatCurrency(1.94999, "USD", "en", false, {decimalPlaces: 2, significantFigures: 4})).toEqual("$1.95");
+  it("formats decimal trailing zeroes correctly", () => {
+    // Round off to max n significant figures
+    expect(formatCurrency(0.00, "USD", "en", false, {maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.00\">2</sub>");
+    expect(formatCurrency(0.000023948, "USD", "en", false, {maximumDecimalTrailingZeroes: 4})).toEqual("$0.00002395");
+    expect(formatCurrency(0.00000000000000003928, "USD", "en", false, {maximumDecimalTrailingZeroes: 3})).toEqual("$0.0<sub title=\"$0.000000000000000039\">16</sub>39");
+  });
 
-    // Round off to max 6 significant figures, with max n decimal places
-    expect(formatCurrency(0.00016, "USD", "en", false, {decimalPlaces: 4, significantFigures: 6})).toEqual("$0.0002");
-    expect(formatCurrency(1234.56789, "USD", "en", false, {decimalPlaces: 3, significantFigures: 6})).toEqual("$1,234.57");
-    expect(formatCurrency(0.000000012345, "BTC", "en", false, {decimalPlaces: 8, significantFigures: 6})).toEqual("₿0.00000001");
+  it("formats decimal places, significant figures and decimal trailing zeroes correctly", () => {
+    // Round off to max n significant figures, with max n decimal places, and maximum 3 decimal trailing zeroes
+    expect(formatCurrency(123.456, "USD", "en", false, {decimalPlaces: 2, significantFigures: 3, maximumDecimalTrailingZeroes: 3})).toEqual("$123");
+    expect(formatCurrency(0.00043, "USD", "en", false, {decimalPlaces: 4, significantFigures: 5, maximumDecimalTrailingZeroes: 3})).toEqual("$0.0004");
+    expect(formatCurrency(1.000049500005, "USD", "en", false, {decimalPlaces: 7, significantFigures: 8, maximumDecimalTrailingZeroes: 3})).toEqual("$1.0<sub title=\"$1.0000495\">4</sub>495");
+    // Handle edge case, should only round once
+    expect(formatCurrency(1.94999, "USD", "en", false, {decimalPlaces: 2, significantFigures: 4, maximumDecimalTrailingZeroes: 2})).toEqual("$1.95");
+
+    // Round off to max n significant figures, with max 4 decimal places, and maximum n decimal trailing zeroes
+    expect(formatCurrency(0.003422, "USD", "en", false, {decimalPlaces: 4, significantFigures: 3, maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.0034\">2</sub>34");
+    expect(formatCurrency(34.0430, "USD", "en", false, {decimalPlaces: 4, significantFigures: 4, maximumDecimalTrailingZeroes: 3})).toEqual("$34.04");
+    expect(formatCurrency(0.000495343, "USD", "en", false, {decimalPlaces: 4, significantFigures: 5, maximumDecimalTrailingZeroes: 2})).toEqual("$0.0<sub title=\"$0.0005\">3</sub>5");
+
+    // Round off to max 6 significant figures, with max n decimal places, and maximum n decimal trailing zeroes
+    expect(formatCurrency(0.00394756, "USD", "en", false, {decimalPlaces: 2, significantFigures: 6, maximumDecimalTrailingZeroes: 2})).toEqual("$0");
+    expect(formatCurrency(12.0430324, "USD", "en", false, {decimalPlaces: 4, significantFigures: 6, maximumDecimalTrailingZeroes: 3})).toEqual("$12.043");
+    expect(formatCurrency(0.000495343, "USD", "en", false, {decimalPlaces: 5, significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.0005\">3</sub>5");
   });
 
   it("raw = true", () => {
