@@ -332,6 +332,8 @@ describe("Accepts object parameter", () => {
     expect(formatCurrency(0.00, "USD", "en", false, {maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.00\">2</sub>");
     expect(formatCurrency(0.000023948, "USD", "en", false, {maximumDecimalTrailingZeroes: 4})).toEqual("$0.00002395");
     expect(formatCurrency(0.00000000000000003928, "USD", "en", false, {maximumDecimalTrailingZeroes: 3})).toEqual("$0.0<sub title=\"$0.000000000000000039\">16</sub>39");
+    // \xa0 is non-breaking space
+    expect(formatCurrency(0.000000000008, "USD", "vi", false, {maximumDecimalTrailingZeroes: 3})).toEqual("0,0<sub title=\"0,000000000008000\xa0US$\">11</sub>8000\xa0US$");
   });
 
   it("formats decimal places, significant figures and decimal trailing zeroes correctly", () => {

@@ -74,11 +74,11 @@ export function isCrypto(isoCode) {
 
 // Function to transform decimal trailing zeroes to exponent
 function decimalTrailingZeroesToExponent(formattedCurrency, maximumDecimalTrailingZeroes) {
-  const decimalTrailingZeroesPattern = new RegExp(`\\.(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`);
+  const decimalTrailingZeroesPattern = new RegExp(`(\\.|,)(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`);
 
   return formattedCurrency.replace(
       decimalTrailingZeroesPattern,
-      (match, decimalTrailingZeroes) => `.0<sub title=\"${formattedCurrency}\">${decimalTrailingZeroes.length}</sub>`,
+      (_match, separator, decimalTrailingZeroes) => `${separator}0<sub title=\"${formattedCurrency}\">${decimalTrailingZeroes.length}</sub>`,
   )
 }
 
