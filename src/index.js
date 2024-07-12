@@ -148,12 +148,12 @@ function generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig) {
   } catch (e) {
     // Unsupported currency, etc.
     // Use primitive fallback
-    return generateFallbackFormatter(isoCode, locale, numDecimals);
+    return generateFallbackFormatter(isoCode, locale, numDecimals, numSigFig);
   }
 }
 
 // Generates a primitive fallback formatter with no symbol support.
-function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
+function generateFallbackFormatter(isoCode, locale, numDecimals = 2, maximumSignificantDigits = 4) {
   isoCode = isoCode.toUpperCase();
 
   if (numDecimals > 2) {
@@ -167,9 +167,15 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
   } else {
     return {
       format: (value) => {
+        let formattedValue = value
+        // try using Intl.NumberFormat when possible to support max significant digits 
+        try {
+          formattedValue = new Intl.NumberFormat('en', { maximumSignificantDigits }).format(value)          
+        } catch (e) {}        
+
         return isCrypto(isoCode)
-          ? `${value.toLocaleString(locale)} ${isoCode}`
-          : `${isoCode} ${value.toLocaleString(locale)}`;
+          ? `${formattedValue.toLocaleString(locale)} ${isoCode}`
+          : `${isoCode} ${formattedValue.toLocaleString(locale)}`;
       },
     };
   }
@@ -199,7 +205,7 @@ function generateFormatter(isoCode, locale, numDecimals, numSigFig) {
     isNumberFormatSupported && (!isCrypto(isoCode) || isBTCETH(isoCode));
   return useIntlNumberFormatter
     ? generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig)
-    : generateFallbackFormatter(isoCode, locale, numDecimals);
+    : generateFallbackFormatter(isoCode, locale, numDecimals, numSigFig);
 }
 
 // State variables
