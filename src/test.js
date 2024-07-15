@@ -361,6 +361,8 @@ describe("Accepts object parameter", () => {
     // non-supported crypto exponents - with significant figures
     expect(formatCurrency(0.00199843, "bnb", "en", false, {significantFigures: 4, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.001998 BNB\">2</sub>1998 BNB");
     expect(formatCurrency(0.00199843, "bnb", "en", false, {significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.00199843 BNB\">2</sub>199843 BNB");
+    expect(formatCurrency(0.00199000, "bnb", "en", false, {significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.00199 BNB\">2</sub>199 BNB");
+    expect(formatCurrency(0.00199843, "bnb", "en", false, {significantFigures: 2, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.002 BNB\">2</sub>2 BNB");
   });
 
   it("raw = true", () => {
