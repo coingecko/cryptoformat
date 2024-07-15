@@ -170,7 +170,7 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2, maximumSign
         let formattedValue = value
         // try using Intl.NumberFormat when possible to support max significant digits 
         try {
-          formattedValue = new Intl.NumberFormat('en', { maximumSignificantDigits }).format(value)          
+          formattedValue = new Intl.NumberFormat(locale, { maximumSignificantDigits }).format(value)          
         } catch (e) {}        
 
         return isCrypto(isoCode)
