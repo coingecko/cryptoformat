@@ -62,6 +62,26 @@ describe("is crypto", () => {
       expect(formatCurrency(0.5, "BTC", "en", false, true)).toBe("₿0.50000000");
     })
   });
+
+  describe("abbreviated = true", () => {
+    test("returns abbreviated format (EN)", () => {
+      expect(formatCurrency(12311111, "BTC", "en", false, false, true)).toBe("₿12.311M");
+      expect(formatCurrency(1000000000, "BTC", "en", false, false, true)).toBe("₿1B");
+      expect(formatCurrency(10000000, "ETH", "en", false, false, true)).toBe("Ξ10M");
+      expect(formatCurrency(100000000, "ETH", "en", false, false, true)).toBe("Ξ100M");
+      expect(formatCurrency(10000000, "DOGE", "en", false, false, true)).toBe("10M DOGE");
+      expect(formatCurrency(100000000, "DOGE", "en", false, false, true)).toBe("100M DOGE");
+    });
+
+    test("returns abbreviated format (JA)", () => {
+      expect(formatCurrency(12311111, "BTC", "ja", false, false, true)).toBe("BTC 1231.111万");
+      expect(formatCurrency(1000000000, "BTC", "ja", false, false, true)).toBe("BTC 10億");
+      expect(formatCurrency(10000000, "ETH", "ja", false, false, true)).toBe("ETH 1000万");
+      expect(formatCurrency(100000000, "ETH", "ja", false, false, true)).toBe("ETH 1億");
+      expect(formatCurrency(10000000, "DOGE", "ja", false, false, true)).toBe("1000万 DOGE");
+      expect(formatCurrency(100000000, "DOGE", "ja", false, false, true)).toBe("1億 DOGE");
+    });
+  });
 });
 
 describe("is fiat", () => {
@@ -142,6 +162,26 @@ describe("is fiat", () => {
       expect(formatCurrency(0.5, "USD", "en", false, true)).toBe("$0.500000");
       expect(formatCurrency(0.00002, "USD", "en", false, true)).toBe("$0.00002000");
     })
+  });
+
+  describe("abbreviated = true", () => {
+    test("returns abbreviated format (EN)", () => {
+      expect(formatCurrency(10200000, "USD", "en", false, false, true)).toBe("$10.2M");
+      expect(formatCurrency(12100000000, "USD", "en", false, false, true)).toBe("$12.1B");
+      expect(formatCurrency(10000000, "AUD", "en", false, false, true)).toBe("A$10M");
+      expect(formatCurrency(100000000, "AUD", "en", false, false, true)).toBe("A$100M");
+      expect(formatCurrency(10000000, "JPY", "en", false, false, true)).toBe("¥10M");
+      expect(formatCurrency(100000000, "JPY", "en", false, false, true)).toBe("¥100M");
+    });
+
+    test("returns abbreviated format (JA)", () => {
+      expect(formatCurrency(12000000, "USD", "ja", false, false, true)).toBe("$1200万");
+      expect(formatCurrency(1210000000, "USD", "ja", false, false, true)).toBe("$12.1億");
+      expect(formatCurrency(10000000, "AUD", "ja", false, false, true)).toBe("A$1000万");
+      expect(formatCurrency(100000000, "AUD", "ja", false, false, true)).toBe("A$1億");
+      expect(formatCurrency(10000000, "JPY", "ja", false, false, true)).toBe("￥1000万");
+      expect(formatCurrency(100000000, "JPY", "ja", false, false, true)).toBe("￥1億");
+    });
   });
 });
 
@@ -287,18 +327,42 @@ describe("Accepts object parameter", () => {
     expect(formatCurrency(1000.12345, "USD", "en", false, {significantFigures: 5})).toEqual("$1,000.1");
   });
 
-  it("formats decimal places and significant figures correctly", () => {
-    // Round off to max n significant figures, with max 2 decimal places
-    expect(formatCurrency(123.456, "USD", "en", false, {decimalPlaces: 2, significantFigures: 3})).toEqual("$123");
-    expect(formatCurrency(12.345678, "USD", "en", false, {decimalPlaces: 2, significantFigures: 4})).toEqual("$12.35");
-    expect(formatCurrency(1005.15, "USD", "en", false, {decimalPlaces: 2, significantFigures: 5})).toEqual("$1,005.2");
-    // Handle edge case, should only round once
-    expect(formatCurrency(1.94999, "USD", "en", false, {decimalPlaces: 2, significantFigures: 4})).toEqual("$1.95");
+  it("formats decimal trailing zeroes correctly", () => {
+    // Round off to max n significant figures
+    expect(formatCurrency(0.00, "USD", "en", false, {maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.00\">2</sub>");
+    expect(formatCurrency(0.000023948, "USD", "en", false, {maximumDecimalTrailingZeroes: 4})).toEqual("$0.00002395");
+    expect(formatCurrency(0.00000000000000003928, "USD", "en", false, {maximumDecimalTrailingZeroes: 3})).toEqual("$0.0<sub title=\"$0.000000000000000039\">16</sub>39");
+    // \xa0 is non-breaking space
+    expect(formatCurrency(0.000000000008, "USD", "vi", false, {maximumDecimalTrailingZeroes: 3})).toEqual("0,0<sub title=\"0,000000000008000\xa0US$\">11</sub>8000\xa0US$");
+  });
 
-    // Round off to max 6 significant figures, with max n decimal places
-    expect(formatCurrency(0.00016, "USD", "en", false, {decimalPlaces: 4, significantFigures: 6})).toEqual("$0.0002");
-    expect(formatCurrency(1234.56789, "USD", "en", false, {decimalPlaces: 3, significantFigures: 6})).toEqual("$1,234.57");
-    expect(formatCurrency(0.000000012345, "BTC", "en", false, {decimalPlaces: 8, significantFigures: 6})).toEqual("₿0.00000001");
+  it("formats decimal places, significant figures and decimal trailing zeroes correctly", () => {
+    // Round off to max n significant figures, with max n decimal places, and maximum 3 decimal trailing zeroes
+    expect(formatCurrency(123.456, "USD", "en", false, {decimalPlaces: 2, significantFigures: 3, maximumDecimalTrailingZeroes: 3})).toEqual("$123");
+    expect(formatCurrency(0.00043, "USD", "en", false, {decimalPlaces: 4, significantFigures: 5, maximumDecimalTrailingZeroes: 3})).toEqual("$0.0004");
+    expect(formatCurrency(1.000049500005, "USD", "en", false, {decimalPlaces: 7, significantFigures: 8, maximumDecimalTrailingZeroes: 3})).toEqual("$1.0<sub title=\"$1.0000495\">4</sub>495");
+    // Handle edge case, should only round once
+    expect(formatCurrency(1.94999, "USD", "en", false, {decimalPlaces: 2, significantFigures: 4, maximumDecimalTrailingZeroes: 2})).toEqual("$1.95");
+
+    // Round off to max n significant figures, with max 4 decimal places, and maximum n decimal trailing zeroes
+    expect(formatCurrency(0.003422, "USD", "en", false, {decimalPlaces: 4, significantFigures: 3, maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.0034\">2</sub>34");
+    expect(formatCurrency(34.0430, "USD", "en", false, {decimalPlaces: 4, significantFigures: 4, maximumDecimalTrailingZeroes: 3})).toEqual("$34.04");
+    expect(formatCurrency(0.000495343, "USD", "en", false, {decimalPlaces: 4, significantFigures: 5, maximumDecimalTrailingZeroes: 2})).toEqual("$0.0<sub title=\"$0.0005\">3</sub>5");
+
+    // Round off to max 6 significant figures, with max n decimal places, and maximum n decimal trailing zeroes
+    expect(formatCurrency(0.00394756, "USD", "en", false, {decimalPlaces: 2, significantFigures: 6, maximumDecimalTrailingZeroes: 2})).toEqual("$0");
+    expect(formatCurrency(12.0430324, "USD", "en", false, {decimalPlaces: 4, significantFigures: 6, maximumDecimalTrailingZeroes: 3})).toEqual("$12.043");
+    expect(formatCurrency(0.000495343, "USD", "en", false, {decimalPlaces: 5, significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("$0.0<sub title=\"$0.0005\">3</sub>5");
+
+    // supported crypto exponents - with significant figures
+    expect(formatCurrency(0.00199843, "btc", "en", false, {significantFigures: 4, maximumDecimalTrailingZeroes: 1})).toEqual("₿0.0<sub title=\"BTC 0.001998\">2</sub>1998");
+    expect(formatCurrency(0.00199843, "btc", "en", false, {significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("₿0.0<sub title=\"BTC 0.00199843\">2</sub>199843");
+
+    // non-supported crypto exponents - with significant figures
+    expect(formatCurrency(0.00199843, "bnb", "en", false, {significantFigures: 4, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.001998 BNB\">2</sub>1998 BNB");
+    expect(formatCurrency(0.00199843, "bnb", "en", false, {significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.00199843 BNB\">2</sub>199843 BNB");
+    expect(formatCurrency(0.00199000, "bnb", "en", false, {significantFigures: 6, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.00199 BNB\">2</sub>199 BNB");
+    expect(formatCurrency(0.00199843, "bnb", "en", false, {significantFigures: 2, maximumDecimalTrailingZeroes: 1})).toEqual("0.0<sub title=\"0.002 BNB\">2</sub>2 BNB");
   });
 
   it("raw = true", () => {

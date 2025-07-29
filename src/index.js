@@ -72,8 +72,22 @@ export function isCrypto(isoCode) {
   return isBTCETH(isoCode) || supportedCurrencySymbols[isoCode] == null;
 }
 
+// Function to transform decimal trailing zeroes to exponent
+function decimalTrailingZeroesToExponent(formattedCurrency, maximumDecimalTrailingZeroes) {
+  const decimalTrailingZeroesPattern = new RegExp(`(\\.|,)(0{${maximumDecimalTrailingZeroes + 1},})(?=[1-9]?)`);
+
+  return formattedCurrency.replace(
+      decimalTrailingZeroesPattern,
+      (_match, separator, decimalTrailingZeroes) => `${separator}0<sub title=\"${formattedCurrency}\">${decimalTrailingZeroes.length}</sub>`,
+  )
+}
+
 // Function to transform the output from Intl.NumberFormat#format
-function formatCurrencyOverride(formattedCurrency, locale = "en") {
+function formatCurrencyOverride(formattedCurrency, locale = "en", maximumDecimalTrailingZeroes) {
+  if (typeof maximumDecimalTrailingZeroes !== "undefined") {
+    formattedCurrency = decimalTrailingZeroesToExponent(formattedCurrency, maximumDecimalTrailingZeroes)
+  }
+
   // If currency code remains in front
   const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}\s?/);
   if (currencyCodeFrontMatch != null) {
@@ -134,12 +148,12 @@ function generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig) {
   } catch (e) {
     // Unsupported currency, etc.
     // Use primitive fallback
-    return generateFallbackFormatter(isoCode, locale, numDecimals);
+    return generateFallbackFormatter(isoCode, locale, numDecimals, numSigFig);
   }
 }
 
 // Generates a primitive fallback formatter with no symbol support.
-function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
+function generateFallbackFormatter(isoCode, locale, numDecimals = 2, maximumSignificantDigits = 4) {
   isoCode = isoCode.toUpperCase();
 
   if (numDecimals > 2) {
@@ -153,12 +167,35 @@ function generateFallbackFormatter(isoCode, locale, numDecimals = 2) {
   } else {
     return {
       format: (value) => {
+        let formattedValue = value
+        // try using Intl.NumberFormat when possible to support max significant digits 
+        try {
+          formattedValue = new Intl.NumberFormat(locale, { maximumSignificantDigits }).format(value)          
+        } catch (e) {}        
+
         return isCrypto(isoCode)
-          ? `${value.toLocaleString(locale)} ${isoCode}`
-          : `${isoCode} ${value.toLocaleString(locale)}`;
+          ? `${formattedValue.toLocaleString(locale)} ${isoCode}`
+          : `${isoCode} ${formattedValue.toLocaleString(locale)}`;
       },
     };
   }
+}
+
+function generateAbbreviatedFormatter(isoCode, locale) {
+  // Show regular numbers if no Intl.NumberFormat support.
+  if (!IntlNumberFormatSupported()) {
+    return generateFallbackFormatter(isoCode, locale, 0);
+  }
+
+  let numberFormatOptions = { style: "decimal", notation: "compact", minimumFractionDigits: 0, maximumFractionDigits: 3 };
+
+  // Currency symbol is supported if currency is Fiat/BTC/ETH.
+  if (!isCrypto(isoCode) || isBTCETH(isoCode)) {
+    numberFormatOptions.style = "currency";
+    numberFormatOptions.currency = isoCode;
+  }
+
+  return new Intl.NumberFormat(locale, numberFormatOptions);
 }
 
 function generateFormatter(isoCode, locale, numDecimals, numSigFig) {
@@ -168,7 +205,7 @@ function generateFormatter(isoCode, locale, numDecimals, numSigFig) {
     isNumberFormatSupported && (!isCrypto(isoCode) || isBTCETH(isoCode));
   return useIntlNumberFormatter
     ? generateIntlNumberFormatter(isoCode, locale, numDecimals, numSigFig)
-    : generateFallbackFormatter(isoCode, locale, numDecimals);
+    : generateFallbackFormatter(isoCode, locale, numDecimals, numSigFig);
 }
 
 // State variables
@@ -183,6 +220,7 @@ let currencyFormatterVerySmall;
 let currencyFormatterVeryVerySmall;
 let currencyFormatter15DP;
 let currencyFormatter18DP;
+let currencyFormatterAbbreviated;
 
 // If a page has to display multiple currencies, formatters would have to be created for each of them
 // To save some effort, we save formatters for reuse
@@ -223,6 +261,9 @@ function initializeFormatters(isoCode, locale) {
   currencyFormatter18DP = cachedFormatter
     ? cachedFormatter.currencyFormatter18DP
     : generateFormatter(isoCode, locale, 18);
+  currencyFormatterAbbreviated = cachedFormatter
+    ? cachedFormatter.currencyFormatterAbbreviated
+    : generateAbbreviatedFormatter(isoCode, locale);
 
   // Save in cache
   if (cachedFormatter == null) {
@@ -236,6 +277,7 @@ function initializeFormatters(isoCode, locale) {
     formattersCache[cacheKey].currencyFormatterVeryVerySmall = currencyFormatterVeryVerySmall;
     formattersCache[cacheKey].currencyFormatter15DP = currencyFormatter15DP;
     formattersCache[cacheKey].currencyFormatter18DP = currencyFormatter18DP;
+    formattersCache[cacheKey].currencyFormatterAbbreviated = currencyFormatterAbbreviated;
   }
 }
 
@@ -251,9 +293,11 @@ export function formatCurrency(
   isoCode,
   locale = "en",
   raw = false,
-  noDecimal = false
+  noDecimal = false,
+  abbreviated = false,
 ) {
   isoCode = isoCode.toUpperCase();
+  let maximumDecimalTrailingZeroes = undefined;
 
   if (currentISOCode !== isoCode || currentLocale != locale) {
     currentISOCode = isoCode;
@@ -261,6 +305,17 @@ export function formatCurrency(
 
     // Formatters are tied to currency code, we try to initialize as infrequently as possible.
     initializeFormatters(isoCode, locale);
+  }
+
+  if (abbreviated) {
+    let formattedAbbreviatedCurrency = currencyFormatterAbbreviated.format(amount);
+
+    // Manually add currency code to the back for non-BTC/ETH crypto currencies.
+    if (isCrypto(isoCode) && !isBTCETH(isoCode)) {
+      formattedAbbreviatedCurrency = `${formattedAbbreviatedCurrency} ${isoCode}`;
+    }
+
+    return formatCurrencyOverride(formattedAbbreviatedCurrency, locale);
   }
 
   if (noDecimal === true && amount > 100.0) {
@@ -276,10 +331,13 @@ export function formatCurrency(
         : amount;
       // Round off to number of significant figures without trailing 0's
       return `${parseFloat(raw_amount).toPrecision(noDecimal.significantFigures) / 1}`;
-    } else if (
-      noDecimal.hasOwnProperty("decimalPlaces") &&
-      noDecimal.hasOwnProperty("significantFigures")
-    ) {
+    }
+
+    if (noDecimal.hasOwnProperty("maximumDecimalTrailingZeroes")) {
+      maximumDecimalTrailingZeroes = noDecimal.maximumDecimalTrailingZeroes;
+    }
+
+    if (noDecimal.hasOwnProperty("decimalPlaces") && noDecimal.hasOwnProperty("significantFigures")) {
       // Show specified number of significant digits with cutoff of specified fraction digits
       const currencyFormatterCustom = generateFormatter(
         isoCode,
@@ -292,9 +350,10 @@ export function formatCurrency(
         currencyFormatterCustom.format(
           Number.parseFloat(amount.toFixed(noDecimal.decimalPlaces))
         ),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
-    } else {
+    } else if (noDecimal.hasOwnProperty("decimalPlaces") || noDecimal.hasOwnProperty("significantFigures")) {
       const currencyFormatterCustom = generateFormatter(
         isoCode,
         locale,
@@ -304,7 +363,8 @@ export function formatCurrency(
 
       return formatCurrencyOverride(
         currencyFormatterCustom.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     }
   }
@@ -322,7 +382,8 @@ export function formatCurrency(
     if (amount === 0.0) {
       return formatCurrencyOverride(
         currencyFormatterNormal.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= LARGE_CRYPTO_THRESHOLD) {
       // Large crypto amount, show no decimal value
@@ -337,34 +398,40 @@ export function formatCurrency(
       // Medium crypto amount, show 3 fraction digits
       return formatCurrencyOverride(
         currencyFormatterMedium.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 1.0 && price < MEDIUM_CRYPTO_THRESHOLD) {
       //  crypto amount, show 6 fraction digits
       return formatCurrencyOverride(
         currencyFormatterSmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 0.000001 && price < 1.0) {
       //  crypto amount, show 8 fraction digits
       return formatCurrencyOverride(
         currencyFormatterVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 10**-9 && price < 10**-6) {
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price >= 10**-12 && price < 10**-9) {
       return formatCurrencyOverride(
         currencyFormatter15DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (price < 10**-12) {
       return formatCurrencyOverride(
         currencyFormatter18DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     }
   } else {
@@ -388,37 +455,44 @@ export function formatCurrency(
     if (unsigned_amount === 0.0) {
       return formatCurrencyOverride(
         currencyFormatterNormal.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 10**-12) {
       return formatCurrencyOverride(
         currencyFormatter18DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 10**-9) {
       return formatCurrencyOverride(
         currencyFormatter15DP.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 10**-6) {
       return formatCurrencyOverride(
         currencyFormatterVeryVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 0.05) {
       return formatCurrencyOverride(
         currencyFormatterVerySmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount < 1.0) {
       return formatCurrencyOverride(
         currencyFormatterSmall.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (isoCode === "JPY" && unsigned_amount < 100) {
       return formatCurrencyOverride(
         currencyFormatterTwoDecimal.format(amount),
-        locale
+        locale,
+        maximumDecimalTrailingZeroes
       );
     } else if (unsigned_amount > NO_DECIMAL_THRESHOLD) {
       return formatCurrencyOverride(
