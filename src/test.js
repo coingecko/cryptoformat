@@ -7,6 +7,323 @@ test("isCrypto", () => {
   expect(isCrypto("IDR")).toBe(false);
 });
 
+describe("Internal helper functions", () => {
+  describe("isBTCETH function", () => {
+    test("returns true for BTC", () => {
+      expect(isCrypto("BTC")).toBe(true);
+    });
+
+    test("returns true for ETH", () => {
+      expect(isCrypto("ETH")).toBe(true);
+    });
+
+    test("returns false for fiat currencies", () => {
+      expect(isCrypto("USD")).toBe(false);
+      expect(isCrypto("EUR")).toBe(false);
+      expect(isCrypto("JPY")).toBe(false);
+    });
+
+    test("returns true for other crypto currencies", () => {
+      expect(isCrypto("DOGE")).toBe(true);
+      expect(isCrypto("LTC")).toBe(true);
+      expect(isCrypto("ADA")).toBe(true);
+    });
+
+    test("handles case sensitivity", () => {
+      expect(isCrypto("btc")).toBe(true);
+      expect(isCrypto("eth")).toBe(true);
+      expect(isCrypto("usd")).toBe(true);
+    });
+  });
+
+  describe("IntlNumberFormatSupported detection", () => {
+    let originalIntl;
+
+    beforeEach(() => {
+      originalIntl = global.Intl;
+    });
+
+    afterEach(() => {
+      global.Intl = originalIntl;
+      clearCache();
+    });
+
+    test("detects when Intl.NumberFormat is supported", () => {
+      expect(formatCurrency(123.45, "USD", "en")).toContain("$");
+    });
+
+    test("falls back when Intl is undefined", () => {
+      global.Intl = undefined;
+      clearCache();
+      expect(formatCurrency(123.45, "USD", "en")).toBe("$123.45");
+    });
+
+    test("falls back when Intl.NumberFormat is undefined", () => {
+      global.Intl = { NumberFormat: undefined };
+      clearCache();
+      expect(formatCurrency(123.45, "USD", "en")).toBe("$123.45");
+    });
+
+    test("falls back when Intl.NumberFormat is not a function", () => {
+      global.Intl = { NumberFormat: "not a function" };
+      clearCache();
+      expect(formatCurrency(123.45, "USD", "en")).toBe("$123.45");
+    });
+  });
+
+  describe("Currency formatter error handling", () => {
+    test("handles unsupported currency codes gracefully", () => {
+      expect(() => formatCurrency(123.45, "INVALID", "en")).not.toThrow();
+      expect(formatCurrency(123.45, "INVALID", "en")).toContain("INVALID");
+    });
+
+    test("handles invalid locale gracefully", () => {
+      expect(() => formatCurrency(123.45, "USD", "invalid-locale")).not.toThrow();
+    });
+
+    test("handles empty currency code", () => {
+      expect(() => formatCurrency(123.45, "", "en")).not.toThrow();
+    });
+
+    test("handles null currency code", () => {
+      expect(() => formatCurrency(123.45, null, "en")).toThrow();
+    });
+  });
+});
+
+describe("Edge cases and boundary conditions", () => {
+  beforeEach(() => {
+    clearCache();
+  });
+
+  describe("Invalid input handling", () => {
+    test("handles null amount", () => {
+      expect(() => formatCurrency(null, "USD", "en")).not.toThrow();
+      expect(formatCurrency(null, "USD", "en")).toBe("$0.00");
+    });
+
+    test("handles undefined amount", () => {
+      expect(() => formatCurrency(undefined, "USD", "en")).not.toThrow();
+      expect(formatCurrency(undefined, "USD", "en")).toBe("$NaN");
+    });
+
+    test("handles NaN amount", () => {
+      expect(() => formatCurrency(NaN, "USD", "en")).not.toThrow();
+      expect(formatCurrency(NaN, "USD", "en")).toBe("$NaN");
+    });
+
+    test("handles Infinity amount", () => {
+      expect(() => formatCurrency(Infinity, "USD", "en")).not.toThrow();
+      expect(formatCurrency(Infinity, "USD", "en")).toBe("$∞");
+    });
+
+    test("handles negative Infinity amount", () => {
+      expect(() => formatCurrency(-Infinity, "USD", "en")).not.toThrow();
+      expect(formatCurrency(-Infinity, "USD", "en")).toBe("-$∞");
+    });
+
+    test("handles very large numbers", () => {
+      const largeNumber = Number.MAX_SAFE_INTEGER;
+      expect(() => formatCurrency(largeNumber, "USD", "en")).not.toThrow();
+    });
+
+    test("handles very small numbers", () => {
+      const smallNumber = Number.MIN_VALUE;
+      expect(() => formatCurrency(smallNumber, "USD", "en")).not.toThrow();
+    });
+  });
+
+  describe("Boundary value testing", () => {
+    test("handles exact threshold values for crypto", () => {
+      expect(formatCurrency(1000, "BTC", "en")).toBe("₿1,000");
+      expect(formatCurrency(1001, "BTC", "en")).toBe("₿1,001");
+      expect(formatCurrency(50, "BTC", "en")).toBe("₿50.000");
+      expect(formatCurrency(51, "BTC", "en")).toBe("₿51.000");
+    });
+
+    test("handles exact threshold values for fiat", () => {
+      expect(formatCurrency(100000, "USD", "en")).toBe("$100,000.00");
+      expect(formatCurrency(100000.01, "USD", "en")).toBe("$100,000");
+      expect(formatCurrency(99999.99, "USD", "en")).toBe("$99,999.99");
+    });
+
+    test("handles zero values", () => {
+      expect(formatCurrency(0, "USD", "en")).toBe("$0.00");
+      expect(formatCurrency(0.0, "BTC", "en")).toBe("₿0.00");
+      expect(formatCurrency(-0, "USD", "en")).toBe("-$0.00");
+    });
+
+    test("handles very small positive values", () => {
+      expect(formatCurrency(0.000000000000001, "USD", "en")).toBe("$0.000000000000001000");
+      expect(formatCurrency(0.000000000000001, "BTC", "en")).toBe("₿0.000000000000001000");
+    });
+  });
+
+  describe("Locale-specific edge cases", () => {
+    test("handles various locales", () => {
+      expect(() => formatCurrency(123.45, "USD", "de")).not.toThrow();
+      expect(() => formatCurrency(123.45, "USD", "fr")).not.toThrow();
+      expect(() => formatCurrency(123.45, "USD", "ja")).not.toThrow();
+      expect(() => formatCurrency(123.45, "USD", "zh")).not.toThrow();
+    });
+
+    test("handles locale with country code", () => {
+      expect(() => formatCurrency(123.45, "USD", "en-US")).not.toThrow();
+      expect(() => formatCurrency(123.45, "USD", "en-GB")).not.toThrow();
+      expect(() => formatCurrency(123.45, "EUR", "de-DE")).not.toThrow();
+    });
+
+    test("handles empty locale", () => {
+      expect(() => formatCurrency(123.45, "USD", "")).toThrow();
+    });
+
+    test("handles null locale", () => {
+      expect(() => formatCurrency(123.45, "USD", null)).toThrow();
+    });
+  });
+});
+
+describe("Caching mechanism", () => {
+  beforeEach(() => {
+    clearCache();
+  });
+
+  test("clearCache function clears formatter cache", () => {
+    formatCurrency(123.45, "USD", "en");
+    clearCache();
+    expect(() => formatCurrency(123.45, "USD", "en")).not.toThrow();
+  });
+
+  test("formatters are reused for same currency/locale combination", () => {
+    const result1 = formatCurrency(123.45, "USD", "en");
+    const result2 = formatCurrency(678.90, "USD", "en");
+    expect(typeof result1).toBe("string");
+    expect(typeof result2).toBe("string");
+  });
+
+  test("different formatters for different currency/locale combinations", () => {
+    const usdResult = formatCurrency(123.45, "USD", "en");
+    const eurResult = formatCurrency(123.45, "EUR", "en");
+    const usdDeResult = formatCurrency(123.45, "USD", "de");
+    
+    expect(usdResult).not.toBe(eurResult);
+    expect(usdResult).not.toBe(usdDeResult);
+  });
+
+  test("cache works with crypto currencies", () => {
+    const btcResult1 = formatCurrency(0.123, "BTC", "en");
+    const btcResult2 = formatCurrency(0.456, "BTC", "en");
+    expect(typeof btcResult1).toBe("string");
+    expect(typeof btcResult2).toBe("string");
+  });
+});
+
+describe("Symbol override functionality", () => {
+  beforeEach(() => {
+    clearCache();
+  });
+
+  test("applies symbol overrides for supported currencies", () => {
+    expect(formatCurrency(123.45, "MYR", "en")).toContain("RM");
+    expect(formatCurrency(123.45, "SGD", "en")).toContain("S$");
+    expect(formatCurrency(123.45, "PHP", "en")).toContain("₱");
+  });
+
+  test("handles currencies without symbol overrides", () => {
+    expect(formatCurrency(123.45, "THB", "en")).toContain("THB");
+    expect(formatCurrency(123.45, "KRW", "en")).toContain("₩");
+  });
+
+  test("symbol overrides work with different locales", () => {
+    expect(formatCurrency(123.45, "MYR", "en")).toContain("RM");
+    expect(() => formatCurrency(123.45, "MYR", "ms")).not.toThrow();
+  });
+
+  test("BTC and ETH symbol overrides", () => {
+    expect(formatCurrency(1.23, "BTC", "en")).toContain("₿");
+    expect(formatCurrency(1.23, "ETH", "en")).toContain("Ξ");
+  });
+});
+
+describe("Decimal trailing zeroes functionality", () => {
+  beforeEach(() => {
+    clearCache();
+  });
+
+  test("handles maximumDecimalTrailingZeroes parameter", () => {
+    const result = formatCurrency(0.00000123, "USD", "en", false, { maximumDecimalTrailingZeroes: 3 });
+    expect(result).toContain("<sub");
+  });
+
+  test("handles edge cases in trailing zeroes", () => {
+    expect(() => formatCurrency(0.1, "USD", "en", false, { maximumDecimalTrailingZeroes: 0 })).not.toThrow();
+    expect(() => formatCurrency(0.1, "USD", "en", false, { maximumDecimalTrailingZeroes: 10 })).not.toThrow();
+  });
+
+  test("trailing zeroes work with different separators", () => {
+    const result = formatCurrency(0.00000123, "USD", "de", false, { maximumDecimalTrailingZeroes: 3 });
+    expect(typeof result).toBe("string");
+  });
+});
+
+describe("Complex parameter combinations", () => {
+  beforeEach(() => {
+    clearCache();
+  });
+
+  test("handles all parameters together", () => {
+    expect(() => formatCurrency(123.456, "USD", "en", true, { decimalPlaces: 2, significantFigures: 3, maximumDecimalTrailingZeroes: 1 })).not.toThrow();
+  });
+
+  test("handles conflicting parameters gracefully", () => {
+    expect(() => formatCurrency(123.456, "USD", "en", false, { decimalPlaces: 10, significantFigures: 2 })).not.toThrow();
+  });
+
+  test("handles empty object parameter", () => {
+    expect(() => formatCurrency(123.456, "USD", "en", false, {})).not.toThrow();
+    expect(formatCurrency(123.456, "USD", "en", false, {})).toBe("$123.46");
+  });
+
+  test("handles object with unknown properties", () => {
+    expect(() => formatCurrency(123.456, "USD", "en", false, { unknownProperty: true })).not.toThrow();
+  });
+});
+
+describe("Fallback formatter behavior", () => {
+  let originalIntl;
+
+  beforeAll(() => {
+    originalIntl = global.Intl;
+    global.Intl = null;
+    clearCache();
+  });
+
+  afterAll(() => {
+    global.Intl = originalIntl;
+    clearCache();
+  });
+
+  test("fallback handles different decimal places", () => {
+    expect(() => formatCurrency(123.456, "USD", "en", false, { decimalPlaces: 0 })).not.toThrow();
+    expect(() => formatCurrency(123.456, "USD", "en", false, { decimalPlaces: 5 })).not.toThrow();
+  });
+
+  test("fallback handles significant figures", () => {
+    expect(() => formatCurrency(123.456, "USD", "en", false, { significantFigures: 2 })).not.toThrow();
+    expect(() => formatCurrency(123.456, "USD", "en", false, { significantFigures: 8 })).not.toThrow();
+  });
+
+  test("fallback distinguishes crypto vs fiat", () => {
+    const cryptoResult = formatCurrency(123.456, "DOGE", "en");
+    const fiatResult = formatCurrency(123.456, "USD", "en");
+    
+    expect(cryptoResult).toContain("DOGE");
+    expect(fiatResult).toContain("USD");
+    expect(cryptoResult.indexOf("DOGE")).toBeGreaterThan(cryptoResult.indexOf("123"));
+    expect(fiatResult.indexOf("USD")).toBeLessThan(fiatResult.indexOf("123"));
+  });
+});
+
 describe("is crypto", () => {
   describe("raw = true", () => {
     test("returns precision of 8", () => {
