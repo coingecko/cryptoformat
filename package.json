@@ -1,5 +1,6 @@
 {
   "name": "@coingecko/cryptoformat",
+  "type": "module",
   "version": "0.8.2",
   "description": "Javascript library to format and display cryptocurrencies and fiat",
   "main": "lib/cryptoformat.cjs.js",
@@ -27,17 +28,15 @@
     "babel-jest": "^24.9.0",
     "jest": "^24.9.0",
     "regenerator-runtime": "^0.13.3",
-    "rollup": "^1.22.0",
+    "rollup": "^4.48.1",
     "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-copy": "^3.1.0",
+    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-node-resolve": "^5.2.0"
-  },
-  "types": "lib/index.d.ts",
-  "dependencies": {},
+	},
   "files": [
     "lib"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   }
 }
