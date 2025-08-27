@@ -1,10 +1,13 @@
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
-import pkg from "./package.json";
+import pkg from "./package.json" with { type: "json" };
 import * as fs from "fs";
 import path from "path";
+import { fileURLToPath } from 'node:url';
 
-const libFolderPath = path.join(__dirname, "./lib");
+// ref https://rollupjs.org/command-line-interface/#getting-the-current-directory
+const currentDir = fileURLToPath(new URL('.', import.meta.url))
+const libFolderPath = path.join(currentDir, "./lib");
 
 // Create lib folder
 if (!fs.existsSync(libFolderPath)) {
@@ -12,8 +15,8 @@ if (!fs.existsSync(libFolderPath)) {
 }
 
 // move index.d.ts to /lib
-fs.createReadStream(path.join(__dirname, "src/index.d.ts")).pipe(
-  fs.createWriteStream(path.join(__dirname, "lib/index.d.ts"))
+fs.createReadStream(path.join(currentDir, "src/index.d.ts")).pipe(
+  fs.createWriteStream(path.join(currentDir, "lib/index.d.ts"))
 );
 
 export default {
