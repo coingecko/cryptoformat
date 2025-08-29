@@ -27,7 +27,7 @@
     "@babel/preset-env": "^7.6.2",
     "babel-jest": "^30.1.1",
     "jest": "^30.1.1",
-    "regenerator-runtime": "^0.13.3",
+    "regenerator-runtime": "^0.14.1",
     "rollup": "^4.48.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-copy": "^3.5.0",
