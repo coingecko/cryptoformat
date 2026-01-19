@@ -1,7 +1,7 @@
 {
   "name": "@coingecko/cryptoformat",
   "type": "module",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Javascript library to format and display cryptocurrencies and fiat",
   "main": "lib/cryptoformat.cjs.js",
   "module": "lib/cryptoformat.esm.js",
