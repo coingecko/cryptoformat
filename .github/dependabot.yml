@@ -4,3 +4,26 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      babel:
+        patterns:
+          - "@babel/*"
+          - "babel-*"
+        update-types:
+          - "minor"
+          - "patch"
+      jest:
+        patterns:
+          - "jest"
+          - "jest-*"
+          - "babel-jest"
+        update-types:
+          - "minor"
+          - "patch"
+      rollup:
+        patterns:
+          - "rollup"
+          - "rollup-*"
+        update-types:
+          - "minor"
+          - "patch"
