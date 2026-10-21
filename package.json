@@ -33,6 +33,11 @@
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-node-resolve": "^5.2.0"
 	},
+  "overrides": {
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^4.1.1"
+    }
+  },
   "files": [
     "lib"
   ],
