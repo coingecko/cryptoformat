@@ -336,6 +336,7 @@ describe("is crypto", () => {
 
   describe("raw = false", () => {
     test("returns formatted", () => {
+      
       expect(formatCurrency(0.0, "BTC", "en")).toBe("₿0.00");
 
       // Large cyrpto, no decimals
@@ -364,6 +365,11 @@ describe("is crypto", () => {
       expect(formatCurrency(1.1, "DOGE", "en")).toBe("1.100000 DOGE");
       expect(formatCurrency(1.1, "LTC", "en")).toBe("1.100000 LTC");
     });
+    test("formats negative BTC and ETH with correct symbols and precision", () => {
+  expect(formatCurrency(-1, "BTC", "en")).toBe("-₿1.000000");
+  expect(formatCurrency(-1, "ETH", "en")).toBe("-Ξ1.000000");
+  expect(formatCurrency(1, "BTC", "en")).toBe("₿1.000000");
+  });
   });
 
   describe("noDecimal = true", () => {

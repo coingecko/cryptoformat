@@ -89,25 +89,27 @@ function formatCurrencyOverride(formattedCurrency, locale = "en", maximumDecimal
   }
 
   // If currency code remains in front
-  const currencyCodeFrontMatch = formattedCurrency.match(/^[A-Z]{3}\s?/);
-  if (currencyCodeFrontMatch != null) {
-    const code = currencyCodeFrontMatch[0].trim(); // trim possible trailing space
+  const currencyCodeFrontMatch = formattedCurrency.match(/^(-?)([A-Z]{3})\s?/);
 
-    // Replace currency code with symbol if whitelisted.
-    const overrideObj = symbolOverrides[code];
-    if (
-      overrideObj &&
-      overrideObj.location.start &&
-      overrideObj.forLocales[locale]
-    ) {
-      return formattedCurrency.replace(
-        currencyCodeFrontMatch[0],
-        supportedCurrencySymbols[code]
-      );
-    } else {
-      return formattedCurrency;
-    }
+if (currencyCodeFrontMatch != null) {
+  const sign = currencyCodeFrontMatch[1];
+  const code = currencyCodeFrontMatch[2];
+
+  const overrideObj = symbolOverrides[code];
+
+  if (
+    overrideObj &&
+    overrideObj.location.start &&
+    overrideObj.forLocales[locale]
+  ) {
+    return formattedCurrency.replace(
+      currencyCodeFrontMatch[0],
+      `${sign}${supportedCurrencySymbols[code]}`
+    );
   }
+
+  return formattedCurrency;
+}
 
   // If currency code is at the back
   const currencyCodeBackMatch = formattedCurrency.match(/[A-Z]{3}$/);
@@ -370,8 +372,7 @@ export function formatCurrency(
   }
 
   if (isCrypto(isoCode)) {
-    let price = parseFloat(amount);
-
+    let price = Math.abs(parseFloat(amount));
     if (raw) {
       if (amount === 0.0) {
         return price.toFixed(2);
